@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class InteractableObject : MonoBehaviour
@@ -9,5 +7,11 @@ public class InteractableObject : MonoBehaviour
     public string GetItemName()
     {
         return ItemName;
+    }
+
+    public void PickUp()
+    {
+        Debug.Log(ItemName + " added to inventory");
+        Destroy(gameObject);
     }
 }

@@ -694,6 +694,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8512330eab62874387f8eeb6e9956db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerInRange: 0
   ItemName: "Thu ho\u1EA1ch L\xFAa"
 --- !u!65 &79156368
 BoxCollider:
@@ -1288,7 +1289,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 769174e8ff3b4554da5ee7412db9ece7,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 769174e8ff3b4554da5ee7412db9ece7,
         type: 3}
@@ -2627,7 +2628,7 @@ GameObject:
   - component: {fileID: 493640420}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4247,6 +4248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8512330eab62874387f8eeb6e9956db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerInRange: 0
   ItemName: "Thu ho\u1EA1ch L\xFAa"
 --- !u!65 &806607939
 BoxCollider:
@@ -5959,7 +5961,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 769174e8ff3b4554da5ee7412db9ece7,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 769174e8ff3b4554da5ee7412db9ece7,
         type: 3}
@@ -6231,6 +6233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8512330eab62874387f8eeb6e9956db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerInRange: 0
   ItemName: "Thu ho\u1EA1ch L\xFAa"
 --- !u!65 &1194295003
 BoxCollider:
@@ -6539,7 +6542,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 769174e8ff3b4554da5ee7412db9ece7,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 769174e8ff3b4554da5ee7412db9ece7,
         type: 3}
@@ -6940,7 +6943,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 769174e8ff3b4554da5ee7412db9ece7,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 769174e8ff3b4554da5ee7412db9ece7,
         type: 3}
@@ -10548,6 +10551,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8512330eab62874387f8eeb6e9956db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerInRange: 0
   ItemName: "Thu ho\u1EA1ch L\xFAa"
 --- !u!65 &2126280935
 BoxCollider:
@@ -11264,6 +11268,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: -151.416
+      objectReference: {fileID: 0}
+    - target: {fileID: 8919179981171227944, guid: 475cb1ee5c19553418049560e46075a6,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

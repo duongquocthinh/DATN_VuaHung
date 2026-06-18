@@ -37,6 +37,13 @@ public class SelectionManager : MonoBehaviour
             {
                 interaction_text.text = interactable.GetItemName();
                 interaction_Info_UI.SetActive(true);
+
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    interactable.PickUp();
+                    interaction_Info_UI.SetActive(false);
+                }
+
                 return;
             }
         }
