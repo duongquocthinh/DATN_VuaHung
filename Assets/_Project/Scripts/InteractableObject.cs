@@ -11,7 +11,15 @@ public class InteractableObject : MonoBehaviour
 
     public void PickUp()
     {
-        Debug.Log(ItemName + " added to inventory");
+        if (InventorySystem.Instance != null)
+        {
+            InventorySystem.Instance.AddItem(ItemName);
+        }
+        else
+        {
+            Debug.LogWarning("InventorySystem is missing in the scene.");
+        }
+
         Destroy(gameObject);
     }
 }
