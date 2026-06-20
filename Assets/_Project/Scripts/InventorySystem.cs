@@ -21,6 +21,7 @@ public class InventorySystem : MonoBehaviour
     public bool isOpen;
 
     private readonly Dictionary<string, int> itemCounts = new Dictionary<string, int>();
+    private readonly List<string> itemOrder = new List<string>();
 
     private void Awake()
     {
@@ -61,21 +62,39 @@ public class InventorySystem : MonoBehaviour
         }
     }
 
-    public void AddItem(string itemName, int amount = 1)
+    public bool AddItem(string itemName, int amount = 1)
     {
         if (string.IsNullOrWhiteSpace(itemName))
         {
-            return;
+            return false;
         }
 
         if (!itemCounts.ContainsKey(itemName))
         {
+            if (IsFull())
+            {
+                Debug.Log("Inventory is full.");
+                return false;
+            }
+
             itemCounts[itemName] = 0;
+            itemOrder.Add(itemName);
         }
 
         itemCounts[itemName] += amount;
         RefreshInventoryUI();
         Debug.Log(itemName + " x" + itemCounts[itemName]);
+        return true;
+    }
+
+    public bool HasItem(string itemName, int amount = 1)
+    {
+        return itemCounts.ContainsKey(itemName) && itemCounts[itemName] >= amount;
+    }
+
+    public bool IsFull()
+    {
+        return itemSlots != null && itemOrder.Count >= itemSlots.Length;
     }
 
     private void RefreshInventoryUI()
@@ -95,7 +114,7 @@ public class InventorySystem : MonoBehaviour
 
         int slotIndex = 0;
 
-        foreach (KeyValuePair<string, int> item in itemCounts)
+        foreach (string itemName in itemOrder)
         {
             if (slotIndex >= itemSlots.Length)
             {
@@ -106,7 +125,7 @@ public class InventorySystem : MonoBehaviour
 
             if (slot != null)
             {
-                slot.SetItem(item.Key, item.Value, GetIcon(item.Key));
+                slot.SetItem(itemName, itemCounts[itemName], GetIcon(itemName));
             }
 
             slotIndex++;

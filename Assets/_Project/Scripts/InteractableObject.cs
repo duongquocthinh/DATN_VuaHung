@@ -13,13 +13,14 @@ public class InteractableObject : MonoBehaviour
     {
         if (InventorySystem.Instance != null)
         {
-            InventorySystem.Instance.AddItem(ItemName);
+            if (InventorySystem.Instance.AddItem(ItemName))
+            {
+                Destroy(gameObject);
+            }
         }
         else
         {
             Debug.LogWarning("InventorySystem is missing in the scene.");
         }
-
-        Destroy(gameObject);
     }
 }
