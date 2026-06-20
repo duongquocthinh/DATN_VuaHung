@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -141,12 +143,44 @@ public class InventorySystem : MonoBehaviour
 
         foreach (InventoryItemIcon itemIcon in itemIcons)
         {
-            if (itemIcon != null && itemIcon.itemName == itemName)
+            if (itemIcon != null && NamesMatch(itemIcon.itemName, itemName))
             {
                 return itemIcon.icon;
             }
         }
 
+        Debug.LogWarning("Missing inventory icon for item: " + itemName);
         return null;
+    }
+
+    private bool NamesMatch(string firstName, string secondName)
+    {
+        return NormalizeItemName(firstName) == NormalizeItemName(secondName);
+    }
+
+    private string NormalizeItemName(string itemName)
+    {
+        if (string.IsNullOrWhiteSpace(itemName))
+        {
+            return "";
+        }
+
+        string normalized = itemName.Trim().Normalize(NormalizationForm.FormD);
+        StringBuilder builder = new StringBuilder();
+
+        foreach (char character in normalized)
+        {
+            UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(character);
+
+            if (category != UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(character);
+            }
+        }
+
+        return builder.ToString()
+            .Normalize(NormalizationForm.FormC)
+            .ToLowerInvariant()
+            .Replace('đ', 'd');
     }
 }
