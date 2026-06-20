@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3220819181228105354
+--- !u!1 &2331938056649846092
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3060868614090715018}
-  - component: {fileID: 3900151279836200812}
-  - component: {fileID: 3312021574645086360}
+  - component: {fileID: 7105221337382814707}
+  - component: {fileID: 903457018426575823}
+  - component: {fileID: 2954857079417469203}
   m_Layer: 0
   m_Name: Bamboo_Bush
   m_TagString: Untagged
@@ -18,42 +18,43 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3060868614090715018
+--- !u!4 &7105221337382814707
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3220819181228105354}
+  m_GameObject: {fileID: 2331938056649846092}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 44.894096, y: 4.733588, z: 23.26896}
+  m_LocalPosition: {x: 38.17, y: 4.74, z: 18.48}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4759062397961501300}
+  - {fileID: 5289967106520374373}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3900151279836200812
+--- !u!114 &903457018426575823
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3220819181228105354}
+  m_GameObject: {fileID: 2331938056649846092}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f8512330eab62874387f8eeb6e9956db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ItemName: "B\u1EE5i Tre"
---- !u!65 &3312021574645086360
+  Amount: 1
+--- !u!65 &2954857079417469203
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3220819181228105354}
+  m_GameObject: {fileID: 2331938056649846092}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -66,85 +67,79 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5.42107, y: 10, z: 5.2980995}
-  m_Center: {x: -0.16674614, y: -0.40999985, z: 0.080848694}
---- !u!1001 &5008336436694654367
+  m_Size: {x: 3.26, y: 5.92, z: 3.67}
+  m_Center: {x: -0.26, y: -1.88, z: -0.04}
+--- !u!1001 &5684392047429598094
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 3060868614090715018}
+    m_TransformParent: {fileID: 7105221337382814707}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.006717682
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.020757198
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.0033283234
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalRotation.x
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalRotation.y
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalRotation.z
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: af340456f796a3d4f8d59ac3a0c3f585,
+    - target: {fileID: 919132149155446097, guid: b048daa9af523964b80be26abcb8b82c,
         type: 3}
       propertyPath: m_Name
-      value: Meshy_AI_Bamboo_Bush_0611100705_image-to-3d-texture
+      value: Meshy_AI_Bamboo_Bush_Low_Poly_0620092026_texture
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: af340456f796a3d4f8d59ac3a0c3f585,
-        type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 3451118302482216456, guid: af340456f796a3d4f8d59ac3a0c3f585, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: af340456f796a3d4f8d59ac3a0c3f585, type: 3}
---- !u!4 &4759062397961501300 stripped
+  m_SourcePrefab: {fileID: 100100000, guid: b048daa9af523964b80be26abcb8b82c, type: 3}
+--- !u!4 &5289967106520374373 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: af340456f796a3d4f8d59ac3a0c3f585,
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b048daa9af523964b80be26abcb8b82c,
     type: 3}
-  m_PrefabInstance: {fileID: 5008336436694654367}
+  m_PrefabInstance: {fileID: 5684392047429598094}
   m_PrefabAsset: {fileID: 0}
