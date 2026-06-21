@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -71,7 +71,10 @@ public class InventorySystem : MonoBehaviour
             return false;
         }
 
-        if (!itemCounts.ContainsKey(itemName))
+        amount = Mathf.Max(1, amount);
+        string storedItemName = GetStoredItemName(itemName);
+
+        if (storedItemName == null)
         {
             if (IsFull())
             {
@@ -79,19 +82,48 @@ public class InventorySystem : MonoBehaviour
                 return false;
             }
 
-            itemCounts[itemName] = 0;
-            itemOrder.Add(itemName);
+            storedItemName = itemName;
+            itemCounts[storedItemName] = 0;
+            itemOrder.Add(storedItemName);
         }
 
-        itemCounts[itemName] += amount;
+        itemCounts[storedItemName] += amount;
         RefreshInventoryUI();
-        Debug.Log(itemName + " x" + itemCounts[itemName]);
+        Debug.Log(storedItemName + " x" + itemCounts[storedItemName]);
+        return true;
+    }
+
+    public bool RemoveItem(string itemName, int amount = 1)
+    {
+        if (string.IsNullOrWhiteSpace(itemName))
+        {
+            return false;
+        }
+
+        amount = Mathf.Max(1, amount);
+        string storedItemName = GetStoredItemName(itemName);
+
+        if (storedItemName == null || itemCounts[storedItemName] < amount)
+        {
+            return false;
+        }
+
+        itemCounts[storedItemName] -= amount;
+
+        if (itemCounts[storedItemName] <= 0)
+        {
+            itemCounts.Remove(storedItemName);
+            itemOrder.Remove(storedItemName);
+        }
+
+        RefreshInventoryUI();
         return true;
     }
 
     public bool HasItem(string itemName, int amount = 1)
     {
-        return itemCounts.ContainsKey(itemName) && itemCounts[itemName] >= amount;
+        string storedItemName = GetStoredItemName(itemName);
+        return storedItemName != null && itemCounts[storedItemName] >= amount;
     }
 
     public bool IsFull()
@@ -132,6 +164,19 @@ public class InventorySystem : MonoBehaviour
 
             slotIndex++;
         }
+    }
+
+    private string GetStoredItemName(string itemName)
+    {
+        foreach (string storedItemName in itemOrder)
+        {
+            if (NamesMatch(storedItemName, itemName))
+            {
+                return storedItemName;
+            }
+        }
+
+        return null;
     }
 
     private Sprite GetIcon(string itemName)
@@ -181,6 +226,8 @@ public class InventorySystem : MonoBehaviour
         return builder.ToString()
             .Normalize(NormalizationForm.FormC)
             .ToLowerInvariant()
-            .Replace('đ', 'd');
+            .Replace("\u0111", "d");
     }
 }
+
+

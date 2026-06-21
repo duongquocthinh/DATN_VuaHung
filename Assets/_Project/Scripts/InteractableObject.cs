@@ -1,6 +1,6 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-public class InteractableObject : MonoBehaviour
+public class InteractableObject : MonoBehaviour, IInteractable
 {
     public string ItemName;
     public int Amount = 1;
@@ -8,6 +8,16 @@ public class InteractableObject : MonoBehaviour
     public string GetItemName()
     {
         return ItemName;
+    }
+
+    public string GetInteractionText()
+    {
+        return ItemName;
+    }
+
+    public void Interact()
+    {
+        PickUp();
     }
 
     public void PickUp()
