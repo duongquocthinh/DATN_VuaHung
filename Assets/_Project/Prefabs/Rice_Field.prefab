@@ -68,13 +68,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemName: "L\xFAa"
-  amount: 1
+  amount: 8
   harvestOnce: 1
   hideVisualAfterHarvest: 1
   createEmptyFieldPatch: 1
-  emptyFieldColor: {r: 0.45, g: 0.36, b: 0.18, a: 1}
+  mudColor: {r: 0.36, g: 0.25, b: 0.12, a: 1}
+  borderColor: {r: 0.46, g: 0.32, b: 0.14, a: 1}
+  strawColor: {r: 0.82, g: 0.62, b: 0.25, a: 1}
+  grassColor: {r: 0.32, g: 0.62, b: 0.18, a: 1}
   emptyPatchThickness: 0.06
   emptyPatchYOffset: 0.02
+  borderWidth: 0.22
+  borderHeight: 0.16
+  stubbleRows: 5
+  stubbleColumns: 8
+  stubbleHeight: 0.18
+  stubbleWidth: 0.035
 --- !u!1001 &8856459169605819155
 PrefabInstance:
   m_ObjectHideFlags: 0
