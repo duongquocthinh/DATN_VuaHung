@@ -64,10 +64,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 7484797716281201556}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8512330eab62874387f8eeb6e9956db, type: 3}
+  m_Script: {fileID: 11500000, guid: 4a3e8a8d7c4a47e4a8e08a2a9454d7a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ItemName: "L\xFAa"
+  itemName: "L\xFAa"
+  amount: 1
+  harvestOnce: 1
+  hideVisualAfterHarvest: 1
+  createEmptyFieldPatch: 1
+  emptyFieldColor: {r: 0.45, g: 0.36, b: 0.18, a: 1}
+  emptyPatchThickness: 0.06
+  emptyPatchYOffset: 0.02
 --- !u!1001 &8856459169605819155
 PrefabInstance:
   m_ObjectHideFlags: 0

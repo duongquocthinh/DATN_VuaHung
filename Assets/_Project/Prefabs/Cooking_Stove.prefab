@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4087219944285311806}
-  - component: {fileID: 5811319622182010213}
   - component: {fileID: 7019046533172779986}
+  - component: {fileID: 6935766879525315399}
   m_Layer: 0
   m_Name: Cooking_Stove
   m_TagString: Untagged
@@ -34,19 +34,6 @@ Transform:
   - {fileID: 8435837439947047876}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5811319622182010213
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1645090321069230105}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8512330eab62874387f8eeb6e9956db, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ItemName: "B\u1EBFp l\u1EEDa"
 --- !u!65 &7019046533172779986
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -68,6 +55,47 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.42, y: 1.89, z: 3.33}
   m_Center: {x: -0.77, y: 1.09, z: 0.49}
+--- !u!114 &6935766879525315399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1645090321069230105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 125880ec8af1021478cc5bdd9c0668fc, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  stationName: "N\u1ED3i n\u1EA5u b\xE1nh"
+  inputItemName: "L\xE1 Dong"
+  inputAmount: 2
+  outputItemName: "B\xE1nh Ch\u01B0ng"
+  outputAmount: 1
+  extraInputItems: []
+  extraOutputItems: []
+  useLargeRecipePanel: 1
+  recipes:
+  - recipeName: "B\xE1nh Ch\u01B0ng"
+    inputItems:
+    - itemName: "L\xE1 Dong"
+      amount: 2
+    - itemName: "G\u1EA1o N\u1EBFp"
+      amount: 4
+    - itemName: "\u0110\u1EADu Xanh"
+      amount: 2
+    - itemName: "Th\u1ECBt L\u1EE3n"
+      amount: 1
+    outputItems:
+    - itemName: "B\xE1nh Ch\u01B0ng"
+      amount: 1
+  - recipeName: "B\xE1nh Gi\u1EA7y"
+    inputItems:
+    - itemName: "G\u1EA1o N\u1EBFp"
+      amount: 4
+    outputItems:
+    - itemName: "B\xE1nh Gi\u1EA7y"
+      amount: 1
 --- !u!1001 &8257530277899887663
 PrefabInstance:
   m_ObjectHideFlags: 0

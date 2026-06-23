@@ -44,6 +44,8 @@ public class InventorySystem : MonoBehaviour
         {
             inventoryScreenUI.SetActive(false);
         }
+
+        RefreshInventoryUI();
     }
 
     private void Update()
@@ -89,7 +91,7 @@ public class InventorySystem : MonoBehaviour
 
         itemCounts[storedItemName] += amount;
         RefreshInventoryUI();
-        Debug.Log(storedItemName + " x" + itemCounts[storedItemName]);
+
         return true;
     }
 
@@ -203,7 +205,7 @@ public class InventorySystem : MonoBehaviour
         return NormalizeItemName(firstName) == NormalizeItemName(secondName);
     }
 
-    private string NormalizeItemName(string itemName)
+    public static string NormalizeItemName(string itemName)
     {
         if (string.IsNullOrWhiteSpace(itemName))
         {
@@ -229,5 +231,3 @@ public class InventorySystem : MonoBehaviour
             .Replace("\u0111", "d");
     }
 }
-
-

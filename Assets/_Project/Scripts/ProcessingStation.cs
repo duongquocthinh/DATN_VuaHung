@@ -19,12 +19,12 @@ public class ProcessingStation : MonoBehaviour, IInteractable
         public RecipeItem[] outputItems;
     }
 
-    [SerializeField] private string stationName = "Coi xay gao";
+    [SerializeField] private string stationName = "Cối xay gạo";
 
     [Header("Simple recipe")]
-    [SerializeField] private string inputItemName = "Lua";
+    [SerializeField] private string inputItemName = "Lúa";
     [SerializeField] private int inputAmount = 8;
-    [SerializeField] private string outputItemName = "Gao Nep";
+    [SerializeField] private string outputItemName = "Gạo Nếp";
     [SerializeField] private int outputAmount = 4;
 
     [Header("Optional extra recipe items")]
@@ -37,14 +37,13 @@ public class ProcessingStation : MonoBehaviour, IInteractable
     [Header("Numbered recipes")]
     [SerializeField] private StationRecipe[] recipes;
 
-    public bool HasNumberedRecipes
-    {
-        get { return recipes != null && recipes.Length > 0; }
-    }
+    public string StationName { get { return stationName; } }
+    public bool HasNumberedRecipes { get { return recipes != null && recipes.Length > 0; } }
+    public bool UseLargeRecipePanel { get { return useLargeRecipePanel; } }
 
-    public bool UseLargeRecipePanel
+    private void Awake()
     {
-        get { return useLargeRecipePanel; }
+        SetupDefaultCookingRecipesIfNeeded();
     }
 
     public string GetInteractionText()
@@ -54,17 +53,16 @@ public class ProcessingStation : MonoBehaviour, IInteractable
             return GetNumberedRecipeText();
         }
 
-        return stationName + "\n"
-            + "Can: " + FormatItems(GetSimpleRequiredItems()) + "\n"
-            + "Tao: " + FormatItems(GetSimpleCreatedItems()) + "\n"
-            + "Nhan E de che bien";
+        return "Cần: " + FormatItems(GetSimpleRequiredItems()) + "\n"
+            + "Tạo: " + FormatItems(GetSimpleCreatedItems()) + "\n"
+            + "Nhấn E để chế biến";
     }
 
     public void Interact()
     {
         if (HasNumberedRecipes)
         {
-            NotificationUI.ShowMessage("Chon phim 1 hoac 2 de che bien.");
+            NotificationUI.ShowMessage("Chọn phím 1 hoặc 2 để chế biến.");
             return;
         }
 
@@ -73,21 +71,19 @@ public class ProcessingStation : MonoBehaviour, IInteractable
 
     public void InteractRecipe(int recipeIndex)
     {
-        if (!HasNumberedRecipes)
+        if (!HasNumberedRecipes || recipeIndex < 0 || recipeIndex >= recipes.Length)
         {
-            Interact();
-            return;
-        }
-
-        if (recipeIndex < 0 || recipeIndex >= recipes.Length || recipes[recipeIndex] == null)
-        {
-            NotificationUI.ShowMessage("Cong thuc khong hop le.");
             return;
         }
 
         StationRecipe recipe = recipes[recipeIndex];
+        if (recipe == null)
+        {
+            return;
+        }
+
         string recipeName = string.IsNullOrWhiteSpace(recipe.recipeName)
-            ? "Cong thuc " + (recipeIndex + 1)
+            ? "Công thức " + (recipeIndex + 1)
             : recipe.recipeName;
 
         ProcessRecipe(recipeName, GetItems(recipe.inputItems), GetItems(recipe.outputItems));
@@ -97,19 +93,7 @@ public class ProcessingStation : MonoBehaviour, IInteractable
     {
         if (InventorySystem.Instance == null)
         {
-            NotificationUI.ShowMessage("Khong tim thay InventorySystem.");
-            return;
-        }
-
-        if (requiredItems.Count == 0)
-        {
-            NotificationUI.ShowMessage("Cong thuc chua co nguyen lieu.");
-            return;
-        }
-
-        if (createdItems.Count == 0)
-        {
-            NotificationUI.ShowMessage("Cong thuc chua co vat pham tao ra.");
+            NotificationUI.ShowMessage("Không tìm thấy InventorySystem.");
             return;
         }
 
@@ -117,7 +101,7 @@ public class ProcessingStation : MonoBehaviour, IInteractable
         {
             if (!InventorySystem.Instance.HasItem(item.itemName, item.amount))
             {
-                NotificationUI.ShowMessage("Ban can " + FormatItems(requiredItems) + " de tao " + recipeName + ".");
+                NotificationUI.ShowMessage("Bạn cần " + FormatItems(requiredItems) + " để tạo " + recipeName + ".");
                 return;
             }
         }
@@ -132,13 +116,12 @@ public class ProcessingStation : MonoBehaviour, IInteractable
             InventorySystem.Instance.AddItem(item.itemName, item.amount);
         }
 
-        NotificationUI.ShowMessage("Da tao " + FormatItems(createdItems) + ".");
+        NotificationUI.ShowMessage("Đã tạo " + FormatItems(createdItems) + ".");
     }
 
     private string GetNumberedRecipeText()
     {
         List<string> lines = new List<string>();
-        lines.Add(stationName);
 
         for (int i = 0; i < recipes.Length; i++)
         {
@@ -149,16 +132,82 @@ public class ProcessingStation : MonoBehaviour, IInteractable
             }
 
             string recipeName = string.IsNullOrWhiteSpace(recipe.recipeName)
-                ? "Cong thuc " + (i + 1)
+                ? "Công thức " + (i + 1)
                 : recipe.recipeName;
 
+            if (lines.Count > 0)
+            {
+                lines.Add("");
+            }
+
             lines.Add("[" + (i + 1) + "] " + recipeName);
-            lines.Add("Can: " + FormatItems(GetItems(recipe.inputItems)));
-            lines.Add("Tao: " + FormatItems(GetItems(recipe.outputItems)));
+            lines.Add("Cần: " + FormatItems(GetItems(recipe.inputItems)));
+            lines.Add("Tạo: " + FormatItems(GetItems(recipe.outputItems)));
         }
 
-        lines.Add("Nhan phim so de che bien");
+        lines.Add("");
+        lines.Add("Nhấn phím số để chế biến");
         return string.Join("\n", lines);
+    }
+
+    private void SetupDefaultCookingRecipesIfNeeded()
+    {
+        if (!LooksLikeCookingStation())
+        {
+            return;
+        }
+
+        stationName = "Nồi nấu bánh";
+        useLargeRecipePanel = true;
+
+        if (HasNumberedRecipes)
+        {
+            return;
+        }
+
+        recipes = new StationRecipe[]
+        {
+            new StationRecipe
+            {
+                recipeName = "Bánh Chưng",
+                inputItems = new RecipeItem[]
+                {
+                    new RecipeItem { itemName = "Lá Dong", amount = 2 },
+                    new RecipeItem { itemName = "Gạo Nếp", amount = 4 },
+                    new RecipeItem { itemName = "Đậu Xanh", amount = 2 },
+                    new RecipeItem { itemName = "Thịt Lợn", amount = 1 }
+                },
+                outputItems = new RecipeItem[]
+                {
+                    new RecipeItem { itemName = "Bánh Chưng", amount = 1 }
+                }
+            },
+            new StationRecipe
+            {
+                recipeName = "Bánh Giầy",
+                inputItems = new RecipeItem[]
+                {
+                    new RecipeItem { itemName = "Gạo Nếp", amount = 4 }
+                },
+                outputItems = new RecipeItem[]
+                {
+                    new RecipeItem { itemName = "Bánh Giầy", amount = 1 }
+                }
+            }
+        };
+    }
+
+    private bool LooksLikeCookingStation()
+    {
+        string sourceName = (stationName + " " + gameObject.name).ToLowerInvariant();
+        return sourceName.Contains("cooking")
+            || sourceName.Contains("stove")
+            || sourceName.Contains("nồi")
+            || sourceName.Contains("noi")
+            || sourceName.Contains("nấu")
+            || sourceName.Contains("nau")
+            || sourceName.Contains("bánh")
+            || sourceName.Contains("banh");
     }
 
     private List<RecipeItem> GetSimpleRequiredItems()
@@ -177,57 +226,59 @@ public class ProcessingStation : MonoBehaviour, IInteractable
         return items;
     }
 
-    private List<RecipeItem> GetItems(RecipeItem[] recipeItems)
+    private List<RecipeItem> GetItems(RecipeItem[] sourceItems)
     {
         List<RecipeItem> items = new List<RecipeItem>();
-        AddRecipeItems(items, recipeItems);
+        AddRecipeItems(items, sourceItems);
         return items;
     }
 
-    private void AddRecipeItems(List<RecipeItem> items, RecipeItem[] recipeItems)
+    private void AddRecipeItems(List<RecipeItem> items, RecipeItem[] sourceItems)
     {
-        if (recipeItems == null)
+        if (sourceItems == null)
         {
             return;
         }
 
-        foreach (RecipeItem recipeItem in recipeItems)
+        foreach (RecipeItem item in sourceItems)
         {
-            if (recipeItem != null)
+            if (item == null)
             {
-                AddRecipeItem(items, recipeItem.itemName, recipeItem.amount);
+                continue;
             }
+
+            AddRecipeItem(items, item.itemName, item.amount);
         }
     }
 
     private void AddRecipeItem(List<RecipeItem> items, string itemName, int amount)
     {
-        if (string.IsNullOrWhiteSpace(itemName))
+        if (string.IsNullOrWhiteSpace(itemName) || amount <= 0)
         {
             return;
         }
 
-        items.Add(new RecipeItem
+        foreach (RecipeItem item in items)
         {
-            itemName = itemName,
-            amount = Mathf.Max(1, amount)
-        });
+            if (InventorySystem.NormalizeItemName(item.itemName) == InventorySystem.NormalizeItemName(itemName))
+            {
+                item.amount += amount;
+                return;
+            }
+        }
+
+        items.Add(new RecipeItem { itemName = itemName, amount = amount });
     }
 
     private string FormatItems(List<RecipeItem> items)
     {
-        if (items == null || items.Count == 0)
-        {
-            return "Khong co";
-        }
-
-        List<string> itemTexts = new List<string>();
+        List<string> parts = new List<string>();
 
         foreach (RecipeItem item in items)
         {
-            itemTexts.Add(item.itemName + " x" + item.amount);
+            parts.Add(item.itemName + " x" + item.amount);
         }
 
-        return string.Join(" + ", itemTexts);
+        return parts.Count > 0 ? string.Join(" + ", parts) : "Không có";
     }
 }
