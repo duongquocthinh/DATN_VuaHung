@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class HarvestableResource : MonoBehaviour, IInteractable
@@ -7,6 +8,8 @@ public class HarvestableResource : MonoBehaviour, IInteractable
     [SerializeField] private bool harvestOnce = true;
     [SerializeField] private bool hideVisualAfterHarvest = true;
     [SerializeField] private bool createEmptyFieldPatch = true;
+    [SerializeField] private bool respawnAfterHarvest = true;
+    [SerializeField] private float respawnDelay = 30f;
     [SerializeField] private Color mudColor = new Color(0.36f, 0.25f, 0.12f);
     [SerializeField] private Color borderColor = new Color(0.46f, 0.32f, 0.14f);
     [SerializeField] private Color strawColor = new Color(0.82f, 0.62f, 0.25f);
@@ -21,6 +24,7 @@ public class HarvestableResource : MonoBehaviour, IInteractable
     [SerializeField] private float stubbleWidth = 0.035f;
 
     private bool harvested;
+    private GameObject emptyFieldPatch;
 
     public string GetInteractionText()
     {
@@ -66,7 +70,14 @@ public class HarvestableResource : MonoBehaviour, IInteractable
             harvestCollider.enabled = false;
         }
 
-        enabled = false;
+        if (respawnAfterHarvest)
+        {
+            StartCoroutine(RespawnAfterDelay());
+        }
+        else
+        {
+            enabled = false;
+        }
     }
 
     private void SetChildRenderersEnabled(bool isEnabled)
@@ -78,14 +89,42 @@ public class HarvestableResource : MonoBehaviour, IInteractable
         }
     }
 
+    private IEnumerator RespawnAfterDelay()
+    {
+        yield return new WaitForSeconds(respawnDelay);
+
+        if (emptyFieldPatch != null)
+        {
+            Destroy(emptyFieldPatch);
+            emptyFieldPatch = null;
+        }
+
+        SetChildRenderersEnabled(true);
+
+        Collider harvestCollider = GetComponent<Collider>();
+        if (harvestCollider != null)
+        {
+            harvestCollider.enabled = true;
+        }
+
+        harvested = false;
+        NotificationUI.ShowMessage(itemName + " da moc lai.", 2f);
+    }
+
     private void CreateEmptyFieldPatch()
     {
+        if (emptyFieldPatch != null)
+        {
+            Destroy(emptyFieldPatch);
+        }
+
         Bounds bounds = GetVisualBounds();
         float sizeX = Mathf.Max(1f, bounds.size.x);
         float sizeZ = Mathf.Max(1f, bounds.size.z);
         float groundY = bounds.min.y + emptyPatchYOffset;
 
         GameObject patchRoot = new GameObject(gameObject.name + "_Empty_Field");
+        emptyFieldPatch = patchRoot;
         patchRoot.transform.position = Vector3.zero;
         patchRoot.transform.rotation = Quaternion.identity;
         if (transform.parent != null)

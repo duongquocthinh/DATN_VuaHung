@@ -1156,6 +1156,8 @@ MonoBehaviour:
   harvestOnce: 1
   hideVisualAfterHarvest: 1
   createEmptyFieldPatch: 1
+  respawnAfterHarvest: 1
+  respawnDelay: 30
   mudColor: {r: 0.36, g: 0.25, b: 0.12, a: 1}
   borderColor: {r: 0.46, g: 0.32, b: 0.14, a: 1}
   strawColor: {r: 0.82, g: 0.62, b: 0.25, a: 1}
@@ -12726,6 +12728,8 @@ MonoBehaviour:
   harvestOnce: 1
   hideVisualAfterHarvest: 1
   createEmptyFieldPatch: 1
+  respawnAfterHarvest: 1
+  respawnDelay: 30
   mudColor: {r: 0.36, g: 0.25, b: 0.12, a: 1}
   borderColor: {r: 0.46, g: 0.32, b: 0.14, a: 1}
   strawColor: {r: 0.82, g: 0.62, b: 0.25, a: 1}
@@ -22594,6 +22598,8 @@ MonoBehaviour:
   harvestOnce: 1
   hideVisualAfterHarvest: 1
   createEmptyFieldPatch: 1
+  respawnAfterHarvest: 1
+  respawnDelay: 30
   mudColor: {r: 0.36, g: 0.25, b: 0.12, a: 1}
   borderColor: {r: 0.46, g: 0.32, b: 0.14, a: 1}
   strawColor: {r: 0.82, g: 0.62, b: 0.25, a: 1}
