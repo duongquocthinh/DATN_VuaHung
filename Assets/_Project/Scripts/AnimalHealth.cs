@@ -11,18 +11,30 @@ public class AnimalHealth : MonoBehaviour
     [SerializeField] private float deathDelay = 1.1f;
     [SerializeField] private float dropGroundOffset = 0.18f;
 
+    [Header("Respawn")]
+    [SerializeField] private bool respawnAfterDeath;
+    [SerializeField] private float respawnDelay = 45f;
+
     private int currentHealth;
     private bool isDead;
     private Animator animator;
     private Collider[] colliders;
+    private Renderer[] renderers;
+    private AudioSource[] audioSources;
     private SimpleAnimalWander wander;
+    private Vector3 spawnPosition;
+    private Quaternion spawnRotation;
 
     private void Awake()
     {
         currentHealth = Mathf.Max(1, maxHealth);
         animator = GetComponentInChildren<Animator>();
         colliders = GetComponentsInChildren<Collider>();
+        renderers = GetComponentsInChildren<Renderer>();
+        audioSources = GetComponentsInChildren<AudioSource>();
         wander = GetComponent<SimpleAnimalWander>();
+        spawnPosition = transform.position;
+        spawnRotation = transform.rotation;
     }
 
     public void TakeDamage(int damage)
@@ -61,7 +73,77 @@ public class AnimalHealth : MonoBehaviour
         yield return new WaitForSeconds(deathDelay);
 
         SpawnDrops();
+
+        if (respawnAfterDeath)
+        {
+            SetAnimalVisible(false);
+            StopLoopingAudio();
+            yield return new WaitForSeconds(Mathf.Max(0.1f, respawnDelay));
+            Respawn();
+            yield break;
+        }
+
         Destroy(gameObject);
+    }
+
+    private void Respawn()
+    {
+        transform.position = spawnPosition;
+        transform.rotation = spawnRotation;
+        currentHealth = Mathf.Max(1, maxHealth);
+        isDead = false;
+
+        SetAnimalVisible(true);
+
+        foreach (Collider animalCollider in colliders)
+        {
+            if (animalCollider != null)
+            {
+                animalCollider.enabled = true;
+            }
+        }
+
+        RestartLoopingAudio();
+
+        if (wander != null)
+        {
+            wander.ResumeWandering();
+        }
+
+        PlayTrigger("Idle");
+    }
+
+    private void SetAnimalVisible(bool visible)
+    {
+        foreach (Renderer animalRenderer in renderers)
+        {
+            if (animalRenderer != null)
+            {
+                animalRenderer.enabled = visible;
+            }
+        }
+    }
+
+    private void StopLoopingAudio()
+    {
+        foreach (AudioSource audioSource in audioSources)
+        {
+            if (audioSource != null && audioSource.loop)
+            {
+                audioSource.Stop();
+            }
+        }
+    }
+
+    private void RestartLoopingAudio()
+    {
+        foreach (AudioSource audioSource in audioSources)
+        {
+            if (audioSource != null && audioSource.loop && audioSource.playOnAwake)
+            {
+                audioSource.Play();
+            }
+        }
     }
 
     private void SpawnDrops()

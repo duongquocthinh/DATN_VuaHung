@@ -109,6 +109,14 @@ public class SimpleAnimalWander : MonoBehaviour
         PlayAnimation("Idle");
     }
 
+    public void ResumeWandering()
+    {
+        isStopped = false;
+        isMoving = false;
+        homePosition = transform.position;
+        StartIdle();
+    }
+
     private void MoveToTarget()
     {
         Vector3 direction = targetPosition - transform.position;

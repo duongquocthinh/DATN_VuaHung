@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using TMPro;
 
 public class QuestTurnInNPC : MonoBehaviour, IInteractable
 {
@@ -9,11 +11,70 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [SerializeField] private int requiredSecondAmount = 1;
     [SerializeField] private bool removeItemsOnComplete = true;
 
+    [Header("Quest UI")]
+    [SerializeField] private string questPanelTitle = "Vua Hung";
+    [SerializeField] private bool useLargeQuestPanel;
+    [TextArea(3, 8)]
+    [SerializeField] private string questPanelMessage;
+    [TextArea(2, 4)]
+    [SerializeField] private string completedQuestPanelMessage;
+
+    [Header("Offering Cutscene")]
+    [SerializeField] private bool showOfferingCutscene = true;
+    [SerializeField] private Camera offeringCamera;
+    [SerializeField] private Transform offeringProp;
+    [SerializeField] private Vector3 offeringStartLocalPosition = new Vector3(0f, -0.45f, 0.85f);
+    [SerializeField] private Vector3 offeringEndLocalPosition = new Vector3(0f, -0.05f, 0.75f);
+    [SerializeField] private Vector3 offeringLocalEuler = new Vector3(18f, 0f, 0f);
+    [SerializeField] private float offeringMoveDuration = 1.6f;
+    [SerializeField] private float offeringHoldDuration = 1.2f;
+
+    [Header("Ending Story")]
+    [SerializeField] private bool showEndingStory = true;
+    [SerializeField] private float endingLineDuration = 4f;
+    [TextArea(2, 5)]
+    [SerializeField] private string[] endingStoryLines;
+
     private bool questCompleted;
+    private bool showingEndingStory;
+    private string currentEndingText;
+    private GUIStyle endingTextStyle;
+
+    public string QuestPanelTitle { get { return questPanelTitle; } }
+    public bool UseLargeQuestPanel { get { return useLargeQuestPanel; } }
+    public TextAlignmentOptions QuestPanelAlignment
+    {
+        get
+        {
+            return questCompleted
+                ? TextAlignmentOptions.Center
+                : TextAlignmentOptions.MidlineLeft;
+        }
+    }
 
     public string GetInteractionText()
     {
         return npcName;
+    }
+
+    public string GetQuestPanelText()
+    {
+        if (questCompleted)
+        {
+            if (!string.IsNullOrWhiteSpace(completedQuestPanelMessage))
+            {
+                return completedQuestPanelMessage;
+            }
+
+            return "Nhiem vu da hoan thanh.\nCam on ban da dang banh len Vua Hung.";
+        }
+
+        if (!string.IsNullOrWhiteSpace(questPanelMessage))
+        {
+            return questPanelMessage;
+        }
+
+        return "Nhan E de dang banh";
     }
 
     public void Interact()
@@ -51,6 +112,133 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         }
 
         questCompleted = true;
-        NotificationUI.ShowMessage("Hoan thanh! Vua Hung da chap nhan Banh Chung va Banh Giay.", 5f);
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySuccess();
+        }
+
+        NotificationUI.ShowMessage("Hoan thanh! Vua Hung da nhan le vat cua Lang Lieu.", 5f);
+
+        if (showOfferingCutscene || showEndingStory)
+        {
+            StartCoroutine(CompleteEndingRoutine());
+        }
+    }
+
+    private IEnumerator CompleteEndingRoutine()
+    {
+        yield return StartCoroutine(ShowOfferingRoutine());
+
+        if (showEndingStory)
+        {
+            yield return StartCoroutine(ShowEndingStoryRoutine());
+        }
+    }
+
+    private IEnumerator ShowOfferingRoutine()
+    {
+        if (!showOfferingCutscene || offeringProp == null)
+        {
+            yield break;
+        }
+
+        if (offeringCamera == null)
+        {
+            offeringCamera = Camera.main;
+        }
+
+        if (offeringCamera == null)
+        {
+            yield break;
+        }
+
+        Transform originalParent = offeringProp.parent;
+        Vector3 originalLocalPosition = offeringProp.localPosition;
+        Quaternion originalLocalRotation = offeringProp.localRotation;
+        bool wasActive = offeringProp.gameObject.activeSelf;
+
+        offeringProp.SetParent(offeringCamera.transform);
+        offeringProp.gameObject.SetActive(true);
+        offeringProp.localPosition = offeringStartLocalPosition;
+        offeringProp.localRotation = Quaternion.Euler(offeringLocalEuler);
+
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.1f, offeringMoveDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            offeringProp.localPosition = Vector3.Lerp(offeringStartLocalPosition, offeringEndLocalPosition, t);
+            yield return null;
+        }
+
+        offeringProp.localPosition = offeringEndLocalPosition;
+        yield return new WaitForSeconds(Mathf.Max(0f, offeringHoldDuration));
+
+        offeringProp.gameObject.SetActive(wasActive);
+        offeringProp.SetParent(originalParent);
+        offeringProp.localPosition = originalLocalPosition;
+        offeringProp.localRotation = originalLocalRotation;
+    }
+
+    private IEnumerator ShowEndingStoryRoutine()
+    {
+        string[] linesToShow = endingStoryLines;
+        if (linesToShow == null || linesToShow.Length == 0)
+        {
+            linesToShow = new[]
+            {
+                "Vua Hung rat hai long voi le vat cua Lang Lieu.",
+                "Banh Chung tuong trung cho dat, noi goi tron san vat cua dong ruong.",
+                "Banh Giay tuong trung cho troi, the hien long biet on to tien va troi dat.",
+                "Tu do, Banh Chung va Banh Giay tro thanh bieu tuong tot dep cua dan toc."
+            };
+        }
+
+        showingEndingStory = true;
+
+        for (int i = 0; i < linesToShow.Length; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(linesToShow[i]))
+            {
+                currentEndingText = linesToShow[i];
+                yield return new WaitForSeconds(Mathf.Max(1f, endingLineDuration));
+            }
+        }
+
+        currentEndingText = "";
+        showingEndingStory = false;
+    }
+
+    private void OnGUI()
+    {
+        if (!showingEndingStory)
+        {
+            return;
+        }
+
+        GUI.color = Color.black;
+        GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
+        GUI.color = Color.white;
+
+        if (endingTextStyle == null)
+        {
+            endingTextStyle = new GUIStyle(GUI.skin.label);
+            endingTextStyle.alignment = TextAnchor.MiddleCenter;
+            endingTextStyle.wordWrap = true;
+            endingTextStyle.fontStyle = FontStyle.Bold;
+        }
+
+        endingTextStyle.fontSize = Mathf.Clamp(Screen.height / 30, 22, 34);
+
+        Rect textRect = new Rect(
+            Screen.width * 0.14f,
+            Screen.height * 0.24f,
+            Screen.width * 0.72f,
+            Screen.height * 0.52f
+        );
+
+        GUI.Label(textRect, currentEndingText, endingTextStyle);
     }
 }

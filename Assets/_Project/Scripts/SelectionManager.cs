@@ -95,6 +95,28 @@ public class SelectionManager : MonoBehaviour
                 return;
             }
 
+            QuestTurnInNPC questTurnInNPC = hit.collider.GetComponentInParent<QuestTurnInNPC>();
+
+            if (questTurnInNPC != null)
+            {
+                HideItemUI();
+                ShowRecipeUI(
+                    questTurnInNPC.QuestPanelTitle,
+                    questTurnInNPC.GetQuestPanelText(),
+                    questTurnInNPC.UseLargeQuestPanel,
+                    questTurnInNPC.QuestPanelAlignment
+                );
+
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    questTurnInNPC.Interact();
+                    HideItemUI();
+                    HideRecipeUI();
+                }
+
+                return;
+            }
+
             IInteractable interactable = hit.collider.GetComponentInParent<IInteractable>();
 
             if (interactable != null)
@@ -167,7 +189,11 @@ public class SelectionManager : MonoBehaviour
         }
     }
 
-    private void ShowRecipeUI(string title, string message, bool useLargePanel)
+    private void ShowRecipeUI(
+        string title,
+        string message,
+        bool useLargePanel,
+        TextAlignmentOptions bodyAlignment = TextAlignmentOptions.MidlineLeft)
     {
         GameObject activePanel = useLargePanel && large_recipe_Info_UI != null
             ? large_recipe_Info_UI
@@ -196,7 +222,7 @@ public class SelectionManager : MonoBehaviour
             large_recipe_Info_UI.SetActive(false);
         }
 
-        ApplyRecipePanelLayout(activePanel, activeTitleText, activeRecipeText, useLargePanel);
+        ApplyRecipePanelLayout(activePanel, activeTitleText, activeRecipeText, useLargePanel, bodyAlignment);
 
         if (activeTitleText != null)
         {
@@ -215,7 +241,8 @@ public class SelectionManager : MonoBehaviour
         GameObject panel,
         TextMeshProUGUI titleText,
         TextMeshProUGUI bodyText,
-        bool useLargePanel)
+        bool useLargePanel,
+        TextAlignmentOptions bodyAlignment)
     {
         if (panel == null)
         {
@@ -273,7 +300,7 @@ public class SelectionManager : MonoBehaviour
             bodyText.enableAutoSizing = true;
             bodyText.fontSizeMin = useLargePanel ? 15f : 16f;
             bodyText.fontSizeMax = useLargePanel ? 22f : 23f;
-            bodyText.alignment = TextAlignmentOptions.MidlineLeft;
+            bodyText.alignment = bodyAlignment;
         }
     }
 

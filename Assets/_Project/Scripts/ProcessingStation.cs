@@ -116,7 +116,25 @@ public class ProcessingStation : MonoBehaviour, IInteractable
             InventorySystem.Instance.AddItem(item.itemName, item.amount);
         }
 
+        PlayProcessSound();
         NotificationUI.ShowMessage("Đã tạo " + FormatItems(createdItems) + ".");
+    }
+
+    private void PlayProcessSound()
+    {
+        if (SoundManager.Instance == null)
+        {
+            return;
+        }
+
+        if (HasNumberedRecipes || LooksLikeCookingStation())
+        {
+            SoundManager.Instance.PlayCooking();
+        }
+        else
+        {
+            SoundManager.Instance.PlayGrinding();
+        }
     }
 
     private string GetNumberedRecipeText()
