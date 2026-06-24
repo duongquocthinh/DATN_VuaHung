@@ -117,7 +117,7 @@ public class ProcessingStation : MonoBehaviour, IInteractable
         }
 
         PlayProcessSound();
-        NotificationUI.ShowMessage("Đã tạo " + FormatItems(createdItems) + ".");
+        NotificationUI.ShowMessage("Da che tao " + FormatItems(createdItems) + ".", 3f);
     }
 
     private void PlayProcessSound()

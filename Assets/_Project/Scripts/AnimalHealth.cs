@@ -37,6 +37,11 @@ public class AnimalHealth : MonoBehaviour
         spawnRotation = transform.rotation;
     }
 
+    private void Start()
+    {
+        RestartLoopingAudio();
+    }
+
     public void TakeDamage(int damage)
     {
         if (isDead)

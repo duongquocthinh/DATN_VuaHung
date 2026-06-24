@@ -36,12 +36,16 @@ public class InteractableObject : MonoBehaviour, IInteractable
 
         if (InventorySystem.Instance != null)
         {
-            if (InventorySystem.Instance.AddItem(ItemName, Mathf.Max(1, Amount)))
+            int pickupAmount = Mathf.Max(1, Amount);
+
+            if (InventorySystem.Instance.AddItem(ItemName, pickupAmount))
             {
                 if (SoundManager.Instance != null)
                 {
                     SoundManager.Instance.PlayPickup();
                 }
+
+                NotificationUI.ShowMessage("Da nhat " + ItemName + " x" + pickupAmount + ".", 2f);
 
                 if (respawnAfterPickup)
                 {
@@ -51,6 +55,10 @@ public class InteractableObject : MonoBehaviour, IInteractable
                 {
                     Destroy(gameObject);
                 }
+            }
+            else
+            {
+                NotificationUI.ShowMessage("Tui do da day.", 2f);
             }
         }
         else

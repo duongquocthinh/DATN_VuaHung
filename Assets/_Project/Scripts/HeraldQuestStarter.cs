@@ -23,6 +23,14 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
     [Header("Dialogue UI")]
     [SerializeField] private bool showDialogueBox = true;
     [SerializeField] private string dialogueTitle = "Lac Hau";
+    [SerializeField] private AudioSource voiceSource;
+    [SerializeField] private AudioClip[] cutsceneVoiceClips;
+
+    [Header("Villager auto setup")]
+    [SerializeField] private bool autoFindMeshyVillagers;
+    [SerializeField] private string autoVillagerNameContains = "Meshy_AI_Village";
+    [SerializeField] private float autoRoutineDistance = 3f;
+    [SerializeField] private float autoRoutineSideOffset = 1.4f;
 
     [Header("Position safety")]
     [SerializeField] private bool keepOriginalHeight = true;
@@ -37,6 +45,12 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
     private GUIStyle dialogueBoxStyle;
     private GUIStyle dialogueTitleStyle;
     private GUIStyle dialogueTextStyle;
+    private bool autoVillagersConfigured;
+
+    public bool IsRunningCutscene
+    {
+        get { return isRunningCutscene; }
+    }
 
     private void Start()
     {
@@ -121,7 +135,8 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
                     ShowDialogue(cutsceneLines[i]);
                 }
 
-                yield return new WaitForSeconds(lineDuration);
+                float waitTime = PlayVoiceClip(i, lineDuration);
+                yield return new WaitForSeconds(waitTime);
             }
         }
         else
@@ -203,6 +218,19 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         showingDialogue = false;
     }
 
+    private float PlayVoiceClip(int index, float fallbackDuration)
+    {
+        if (voiceSource == null || cutsceneVoiceClips == null || index < 0 || index >= cutsceneVoiceClips.Length || cutsceneVoiceClips[index] == null)
+        {
+            return fallbackDuration;
+        }
+
+        voiceSource.Stop();
+        voiceSource.clip = cutsceneVoiceClips[index];
+        voiceSource.Play();
+        return Mathf.Max(fallbackDuration, cutsceneVoiceClips[index].length + 0.3f);
+    }
+
     private void OnGUI()
     {
         if (!showingDialogue || string.IsNullOrWhiteSpace(currentDialogueLine))
@@ -212,8 +240,8 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
 
         CreateDialogueStylesIfNeeded();
 
-        float width = Mathf.Min(760f, Screen.width * 0.72f);
-        float height = Mathf.Min(210f, Screen.height * 0.28f);
+        float width = Mathf.Min(860f, Screen.width * 0.78f);
+        float height = Mathf.Min(235f, Screen.height * 0.31f);
         float x = (Screen.width - width) * 0.5f;
         float y = Screen.height - height - 55f;
 
@@ -223,7 +251,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         Rect titleRect = new Rect(x + 24f, y + 16f, width - 48f, 34f);
         GUI.Label(titleRect, dialogueTitle, dialogueTitleStyle);
 
-        Rect textRect = new Rect(x + 28f, y + 62f, width - 56f, height - 78f);
+        Rect textRect = new Rect(x + 28f, y + 62f, width - 56f, height - 82f);
         GUI.Label(textRect, currentDialogueLine, dialogueTextStyle);
     }
 
@@ -251,12 +279,14 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         dialogueTextStyle.alignment = TextAnchor.UpperLeft;
         dialogueTextStyle.wordWrap = true;
         dialogueTextStyle.fontStyle = FontStyle.Bold;
-        dialogueTextStyle.fontSize = Mathf.Clamp(Screen.height / 38, 18, 26);
+        dialogueTextStyle.fontSize = Mathf.Clamp(Screen.height / 38, 18, 25);
         dialogueTextStyle.normal.textColor = Color.white;
     }
 
     private void StartVillagers()
     {
+        EnsureAutoVillagers();
+
         if (villagers == null)
         {
             return;
@@ -268,6 +298,118 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
             {
                 villagers[i].BeginRoutine();
             }
+        }
+    }
+
+    private void EnsureAutoVillagers()
+    {
+        if (autoVillagersConfigured || !autoFindMeshyVillagers || (villagers != null && villagers.Length > 0))
+        {
+            return;
+        }
+
+        autoVillagersConfigured = true;
+
+        Transform[] allTransforms = FindObjectsOfType<Transform>(true);
+        System.Collections.Generic.List<VillageRoutineNPC> foundVillagers = new System.Collections.Generic.List<VillageRoutineNPC>();
+
+        for (int i = 0; i < allTransforms.Length; i++)
+        {
+            Transform candidate = allTransforms[i];
+            if (candidate == null || !candidate.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(candidate.name) || !candidate.name.Contains(autoVillagerNameContains))
+            {
+                continue;
+            }
+
+            VillageRoutineNPC routineNPC = candidate.GetComponent<VillageRoutineNPC>();
+            if (routineNPC == null)
+            {
+                routineNPC = candidate.gameObject.AddComponent<VillageRoutineNPC>();
+            }
+
+            SimpleVillagerWorkMotion motion = candidate.GetComponentInChildren<SimpleVillagerWorkMotion>();
+            if (motion == null)
+            {
+                motion = candidate.gameObject.AddComponent<SimpleVillagerWorkMotion>();
+            }
+
+            SimpleVillagerWorkMotion.WorkStyle workStyle = GetAutoWorkStyle(foundVillagers.Count);
+            string activity = GetAutoActivityName(workStyle);
+            Transform[] points = CreateAutoRoutinePoints(candidate, foundVillagers.Count);
+
+            routineNPC.ConfigureSimpleRoutine("Dan lang", activity, points, workStyle, motion);
+            foundVillagers.Add(routineNPC);
+        }
+
+        villagers = foundVillagers.ToArray();
+    }
+
+    private Transform[] CreateAutoRoutinePoints(Transform villager, int index)
+    {
+        Vector3 startPosition = villager.position;
+        Vector3 forward = transform.forward;
+        Vector3 right = transform.right;
+
+        if (forward.sqrMagnitude < 0.001f)
+        {
+            forward = Vector3.forward;
+        }
+
+        if (right.sqrMagnitude < 0.001f)
+        {
+            right = Vector3.right;
+        }
+
+        float sideSign = index % 2 == 0 ? 1f : -1f;
+        Vector3 workPosition = startPosition
+            + forward.normalized * autoRoutineDistance
+            + right.normalized * autoRoutineSideOffset * sideSign;
+
+        GameObject startPoint = new GameObject(villager.name + "_ListenPoint");
+        startPoint.transform.position = startPosition;
+        startPoint.transform.rotation = villager.rotation;
+
+        GameObject workPoint = new GameObject(villager.name + "_WorkPoint");
+        workPoint.transform.position = workPosition;
+        workPoint.transform.rotation = villager.rotation;
+
+        return new Transform[] { workPoint.transform, startPoint.transform };
+    }
+
+    private SimpleVillagerWorkMotion.WorkStyle GetAutoWorkStyle(int index)
+    {
+        switch (index % 4)
+        {
+            case 0:
+                return SimpleVillagerWorkMotion.WorkStyle.GatherLeaves;
+            case 1:
+                return SimpleVillagerWorkMotion.WorkStyle.Cook;
+            case 2:
+                return SimpleVillagerWorkMotion.WorkStyle.PoundRice;
+            default:
+                return SimpleVillagerWorkMotion.WorkStyle.SitByFire;
+        }
+    }
+
+    private string GetAutoActivityName(SimpleVillagerWorkMotion.WorkStyle workStyle)
+    {
+        switch (workStyle)
+        {
+            case SimpleVillagerWorkMotion.WorkStyle.GatherLeaves:
+                return "Dang hai la dong";
+            case SimpleVillagerWorkMotion.WorkStyle.Cook:
+                return "Dang chuan bi bep nau";
+            case SimpleVillagerWorkMotion.WorkStyle.PoundRice:
+                return "Dang gia gao nep";
+            case SimpleVillagerWorkMotion.WorkStyle.SitByFire:
+                return "Dang ngoi canh bep lua";
+            default:
+                return "Dang phu giup dan lang";
         }
     }
 

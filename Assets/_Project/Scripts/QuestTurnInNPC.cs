@@ -14,8 +14,8 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [Header("Quest UI")]
     [SerializeField] private string questPanelTitle = "Vua Hung";
     [SerializeField] private bool useLargeQuestPanel;
-    [TextArea(3, 8)]
-    [SerializeField] private string questPanelMessage;
+    [TextArea(2, 4)]
+    [SerializeField] private string simpleTurnInPrompt = "Nhan E de dang banh";
     [TextArea(2, 4)]
     [SerializeField] private string completedQuestPanelMessage;
 
@@ -32,6 +32,8 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [Header("Ending Story")]
     [SerializeField] private bool showEndingStory = true;
     [SerializeField] private float endingLineDuration = 4f;
+    [SerializeField] private AudioSource endingVoiceSource;
+    [SerializeField] private AudioClip endingVoiceClip;
     [TextArea(2, 5)]
     [SerializeField] private string[] endingStoryLines;
 
@@ -69,9 +71,9 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
             return "Nhiem vu da hoan thanh.\nCam on ban da dang banh len Vua Hung.";
         }
 
-        if (!string.IsNullOrWhiteSpace(questPanelMessage))
+        if (!string.IsNullOrWhiteSpace(simpleTurnInPrompt))
         {
-            return questPanelMessage;
+            return simpleTurnInPrompt;
         }
 
         return "Nhan E de dang banh";
@@ -198,12 +200,27 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
 
         showingEndingStory = true;
 
+        float endingVoiceDuration = 0f;
+        if (endingVoiceSource != null && endingVoiceClip != null)
+        {
+            endingVoiceSource.Stop();
+            endingVoiceSource.clip = endingVoiceClip;
+            endingVoiceSource.Play();
+            endingVoiceDuration = endingVoiceClip.length + 0.3f;
+        }
+
         for (int i = 0; i < linesToShow.Length; i++)
         {
             if (!string.IsNullOrWhiteSpace(linesToShow[i]))
             {
                 currentEndingText = linesToShow[i];
-                yield return new WaitForSeconds(Mathf.Max(1f, endingLineDuration));
+                float waitTime = endingLineDuration;
+                if (linesToShow.Length == 1 && endingVoiceDuration > 0f)
+                {
+                    waitTime = Mathf.Max(waitTime, endingVoiceDuration);
+                }
+
+                yield return new WaitForSeconds(Mathf.Max(1f, waitTime));
             }
         }
 

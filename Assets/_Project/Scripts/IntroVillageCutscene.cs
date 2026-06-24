@@ -8,6 +8,8 @@ public class IntroVillageCutscene : MonoBehaviour
     [TextArea(2, 5)]
     [SerializeField] private string[] blackScreenLines;
     [SerializeField] private float blackScreenLineDuration = 4f;
+    [SerializeField] private AudioSource voiceSource;
+    [SerializeField] private AudioClip[] blackScreenVoiceClips;
 
     [Header("Camera")]
     [SerializeField] private Camera cutsceneCamera;
@@ -29,6 +31,7 @@ public class IntroVillageCutscene : MonoBehaviour
     [TextArea(2, 4)]
     [SerializeField] private string[] storyLines;
     [SerializeField] private float lineDuration = 4f;
+    [SerializeField] private AudioClip[] storyVoiceClips;
     [SerializeField] private bool playOnStart = true;
 
     private Transform cameraTransform;
@@ -91,7 +94,19 @@ public class IntroVillageCutscene : MonoBehaviour
         if (startHeraldAfterCameraMove && heraldToStart != null)
         {
             heraldToStart.StartQuestCutscene();
-            yield return new WaitForSeconds(Mathf.Max(0f, waitAfterHeraldStarts));
+            yield return null;
+
+            if (heraldToStart.IsRunningCutscene)
+            {
+                while (heraldToStart.IsRunningCutscene)
+                {
+                    yield return null;
+                }
+            }
+            else
+            {
+                yield return new WaitForSeconds(Mathf.Max(0f, waitAfterHeraldStarts));
+            }
         }
 
         NotificationUI.ShowMessage("Nhiem vu cua Lang Lieu: thu thap nguyen lieu, lam banh va dang len Vua Hung.", 5f);
@@ -121,7 +136,8 @@ public class IntroVillageCutscene : MonoBehaviour
             for (int i = 0; i < linesToShow.Length; i++)
             {
                 blackScreenText = linesToShow[i];
-                yield return new WaitForSeconds(Mathf.Max(0.5f, blackScreenLineDuration));
+                float waitTime = PlayVoiceClip(blackScreenVoiceClips, i, blackScreenLineDuration);
+                yield return new WaitForSeconds(Mathf.Max(0.5f, waitTime));
             }
         }
 
@@ -174,8 +190,22 @@ public class IntroVillageCutscene : MonoBehaviour
                 NotificationUI.ShowMessage(storyLines[i], lineDuration);
             }
 
-            yield return new WaitForSeconds(lineDuration);
+            float waitTime = PlayVoiceClip(storyVoiceClips, i, lineDuration);
+            yield return new WaitForSeconds(waitTime);
         }
+    }
+
+    private float PlayVoiceClip(AudioClip[] clips, int index, float fallbackDuration)
+    {
+        if (voiceSource == null || clips == null || index < 0 || index >= clips.Length || clips[index] == null)
+        {
+            return fallbackDuration;
+        }
+
+        voiceSource.Stop();
+        voiceSource.clip = clips[index];
+        voiceSource.Play();
+        return Mathf.Max(fallbackDuration, clips[index].length + 0.3f);
     }
 
     private IEnumerator MoveCameraRoutine()

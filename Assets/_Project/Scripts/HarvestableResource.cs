@@ -51,6 +51,11 @@ public class HarvestableResource : MonoBehaviour, IInteractable
             return;
         }
 
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayPickup();
+        }
+
         harvested = true;
         NotificationUI.ShowMessage("Da thu hoach " + itemName + " x" + Mathf.Max(1, amount) + ".");
 

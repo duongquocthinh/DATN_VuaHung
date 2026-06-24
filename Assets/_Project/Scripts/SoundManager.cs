@@ -5,7 +5,6 @@ public class SoundManager : MonoBehaviour
     public static SoundManager Instance { get; private set; }
 
     [Header("Audio sources")]
-    [SerializeField] private AudioSource musicSource;
     [SerializeField] private AudioSource sfxSource;
 
     [Header("Sound effects")]
@@ -24,10 +23,7 @@ public class SoundManager : MonoBehaviour
 
         Instance = this;
 
-        if (sfxSource == null)
-        {
-            sfxSource = GetComponent<AudioSource>();
-        }
+        EnsureSfxSource();
     }
 
     public void PlayPickup()
@@ -52,11 +48,46 @@ public class SoundManager : MonoBehaviour
 
     private void PlayOneShot(AudioClip clip)
     {
-        if (clip == null || sfxSource == null)
+        if (clip == null)
+        {
+            return;
+        }
+
+        EnsureSfxSource();
+        if (sfxSource == null)
         {
             return;
         }
 
         sfxSource.PlayOneShot(clip);
+    }
+
+    private void EnsureSfxSource()
+    {
+        if (sfxSource != null)
+        {
+            return;
+        }
+
+        AudioSource existingSource = GetComponent<AudioSource>();
+        bool existingSourceLooksLikeMusic = existingSource != null
+            && existingSource.clip != null
+            && (existingSource.loop || existingSource.playOnAwake);
+
+        if (existingSourceLooksLikeMusic)
+        {
+            sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.playOnAwake = false;
+            sfxSource.volume = 1f;
+            return;
+        }
+
+        sfxSource = existingSource;
+        if (sfxSource == null)
+        {
+            sfxSource = gameObject.AddComponent<AudioSource>();
+            sfxSource.playOnAwake = false;
+            sfxSource.volume = 1f;
+        }
     }
 }
