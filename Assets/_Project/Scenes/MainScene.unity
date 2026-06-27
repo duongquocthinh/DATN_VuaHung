@@ -4201,6 +4201,7 @@ MonoBehaviour:
   snapToWorkPointAfterShortMove: 1
   maxCutsceneWalkSeconds: 2
   stayAtFirstWorkPoint: 1
+  stopAtLastRoutinePoint: 0
   useAnimator: 1
   useWalkingAnimation: 1
   forcedWalkingAnimationSeconds: 1.4
@@ -12300,6 +12301,7 @@ MonoBehaviour:
   snapToWorkPointAfterShortMove: 1
   maxCutsceneWalkSeconds: 2
   stayAtFirstWorkPoint: 1
+  stopAtLastRoutinePoint: 0
   useAnimator: 1
   useWalkingAnimation: 1
   forcedWalkingAnimationSeconds: 1.4
@@ -13578,9 +13580,12 @@ MonoBehaviour:
   npcName: "D\xE2n l\xE0ng"
   activityName: "\u0110ang l\xE0m vi\u1EC7c"
   routinePoints:
-  - {fileID: 91463228}
-  - {fileID: 91463228}
-  - {fileID: 91463228}
+  - {fileID: 1265162758}
+  - {fileID: 195242897}
+  - {fileID: 272975379}
+  - {fileID: 1584834201}
+  - {fileID: 1370574109}
+  - {fileID: 1937071089}
   - {fileID: 91463228}
   startRoutineOnAwake: 0
   moveSpeed: 2
@@ -13594,9 +13599,10 @@ MonoBehaviour:
   navMeshSampleDistance: 1.5
   navMeshAgentRadius: 0.35
   navMeshAgentHeight: 1.8
-  snapToWorkPointAfterShortMove: 1
+  snapToWorkPointAfterShortMove: 0
   maxCutsceneWalkSeconds: 2
-  stayAtFirstWorkPoint: 1
+  stayAtFirstWorkPoint: 0
+  stopAtLastRoutinePoint: 1
   useAnimator: 1
   useWalkingAnimation: 0
   forcedWalkingAnimationSeconds: 1.4
@@ -14782,6 +14788,37 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2054081375}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1265162757
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1265162758}
+  m_Layer: 0
+  m_Name: 'DanLang_Point_TruocCongLang '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1265162758
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1265162757}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 116.96, y: -6.37, z: 195.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1623901043}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1281464561 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3561954046757391192, guid: f975d2760e475974f91b3c3c7cd5ccff,
@@ -15837,7 +15874,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1370574109}
   m_Layer: 0
-  m_Name: DanLang_Point_5 (1)
+  m_Name: DanLang_Point_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19113,12 +19150,14 @@ Transform:
   - {fileID: 274435767}
   - {fileID: 770483069}
   - {fileID: 195242897}
+  - {fileID: 1265162758}
   - {fileID: 272975379}
   - {fileID: 1584834201}
   - {fileID: 802088727}
   - {fileID: 1902989849}
   - {fileID: 374015699}
   - {fileID: 1370574109}
+  - {fileID: 1937071089}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1626871046
@@ -19385,6 +19424,7 @@ MonoBehaviour:
   snapToWorkPointAfterShortMove: 1
   maxCutsceneWalkSeconds: 2
   stayAtFirstWorkPoint: 0
+  stopAtLastRoutinePoint: 0
   useAnimator: 1
   useWalkingAnimation: 1
   forcedWalkingAnimationSeconds: 1.4
@@ -20939,6 +20979,7 @@ MonoBehaviour:
   snapToWorkPointAfterShortMove: 1
   maxCutsceneWalkSeconds: 2
   stayAtFirstWorkPoint: 1
+  stopAtLastRoutinePoint: 0
   useAnimator: 1
   useWalkingAnimation: 0
   forcedWalkingAnimationSeconds: 1.4
@@ -22724,6 +22765,37 @@ Transform:
   - {fileID: 940790449}
   - {fileID: 2036388685}
   m_Father: {fileID: 1562154470}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1937071088
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1937071089}
+  m_Layer: 0
+  m_Name: DanLang_Point_7
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1937071089
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937071088}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 212.9, y: -6.37, z: 12.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1623901043}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1940406693
 GameObject:
@@ -25404,6 +25476,7 @@ MonoBehaviour:
   snapToWorkPointAfterShortMove: 1
   maxCutsceneWalkSeconds: 2
   stayAtFirstWorkPoint: 1
+  stopAtLastRoutinePoint: 0
   useAnimator: 1
   useWalkingAnimation: 0
   forcedWalkingAnimationSeconds: 1.4

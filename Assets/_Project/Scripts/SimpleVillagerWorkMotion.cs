@@ -24,6 +24,7 @@ public class SimpleVillagerWorkMotion : MonoBehaviour
 
     private Vector3 startLocalPosition;
     private Quaternion startLocalRotation;
+    private bool motionEnabled = true;
 
     private void Awake()
     {
@@ -42,6 +43,12 @@ public class SimpleVillagerWorkMotion : MonoBehaviour
         if (motionTarget == null)
         {
             motionTarget = FindMotionTarget();
+        }
+
+        if (motionTarget == null)
+        {
+            enabled = false;
+            return;
         }
 
         startLocalPosition = motionTarget.localPosition;
@@ -64,12 +71,23 @@ public class SimpleVillagerWorkMotion : MonoBehaviour
 
     private void Update()
     {
-        if (motionTarget != null)
+        if (motionTarget != null && motionEnabled)
         {
             ApplyWorkMotion();
         }
 
         LookAtPlayerIfNear();
+    }
+
+    public void SetMotionEnabled(bool enabled)
+    {
+        motionEnabled = enabled;
+
+        if (!motionEnabled && motionTarget != null)
+        {
+            motionTarget.localPosition = startLocalPosition;
+            motionTarget.localRotation = startLocalRotation;
+        }
     }
 
     private void ApplyWorkMotion()

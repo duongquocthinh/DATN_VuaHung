@@ -43,6 +43,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
 
     [Header("Simple motion when no animation clip")]
     [SerializeField] private SimpleVillagerWorkMotion simpleMotion;
+    [SerializeField] private bool useSimpleMotionWhileMoving = false;
     [SerializeField] private SimpleVillagerWorkMotion.WorkStyle beforeRoutineStyle = SimpleVillagerWorkMotion.WorkStyle.Listen;
     [SerializeField] private SimpleVillagerWorkMotion.WorkStyle movingStyle = SimpleVillagerWorkMotion.WorkStyle.Carry;
     [SerializeField] private SimpleVillagerWorkMotion.WorkStyle workingStyle = SimpleVillagerWorkMotion.WorkStyle.GatherLeaves;
@@ -54,6 +55,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
     private bool isWaitingAtPoint;
     private bool playedWorkWithoutPoint;
     private bool waitingAtFinalWorkPoint;
+    private bool waitingAtTravelPoint;
     private bool shouldSnapAfterShortMove;
     private float snapMoveUntil;
     private float forceWalkingAnimationUntil;
@@ -129,6 +131,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         }
 
         SetSimpleMotion(routineStarted ? movingStyle : beforeRoutineStyle);
+        SetSimpleMotionEnabled(!routineStarted || useSimpleMotionWhileMoving);
     }
 
     private void Update()
@@ -147,6 +150,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
             SetWalking(false);
             StopNavMeshAgent();
             SetSimpleMotion(workingStyle);
+            SetSimpleMotionEnabled(true);
             EnsureWorkAnimation();
             return;
         }
@@ -169,8 +173,16 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         {
             SetWalking(false);
             StopNavMeshAgent();
-            SetSimpleMotion(workingStyle);
-            EnsureWorkAnimation();
+            if (waitingAtTravelPoint)
+            {
+                SetSimpleMotionEnabled(false);
+            }
+            else
+            {
+                SetSimpleMotion(workingStyle);
+                SetSimpleMotionEnabled(true);
+                EnsureWorkAnimation();
+            }
             isWaitingAtPoint = true;
             return;
         }
@@ -178,7 +190,9 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         if (isWaitingAtPoint)
         {
             isWaitingAtPoint = false;
+            waitingAtTravelPoint = false;
             SetSimpleMotion(movingStyle);
+            SetSimpleMotionEnabled(useSimpleMotionWhileMoving);
         }
 
         Transform target = GetCurrentRoutinePoint();
@@ -210,15 +224,13 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
 
         if (direction.magnitude <= stopDistance)
         {
-            waitUntil = Time.time + waitAtPoint;
-            SetWalking(false);
-            PlayWorkAnimation();
-            FinishOrAdvanceAfterArrival();
+            ArriveAtCurrentPoint();
             return;
         }
 
         SetWalking(true);
         SetSimpleMotion(movingStyle);
+        SetSimpleMotionEnabled(useSimpleMotionWhileMoving);
         Quaternion targetRotation = GetFacingRotation(direction.normalized);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
         transform.position += direction.normalized * currentMoveSpeed * Time.deltaTime;
@@ -250,6 +262,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
 
         SetWalking(true);
         SetSimpleMotion(movingStyle);
+        SetSimpleMotionEnabled(useSimpleMotionWhileMoving);
     }
 
     private void ArriveAtCurrentPoint()
@@ -257,7 +270,15 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         waitUntil = Time.time + waitAtPoint;
         SetWalking(false);
         StopNavMeshAgent();
-        PlayWorkAnimation();
+        if (ShouldWorkAtCurrentPoint())
+        {
+            PlayWorkAnimation();
+        }
+        else
+        {
+            waitingAtTravelPoint = true;
+            SetSimpleMotionEnabled(false);
+        }
         FinishOrAdvanceAfterArrival();
     }
 
@@ -289,6 +310,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         routineStarted = true;
         playedWorkWithoutPoint = false;
         waitingAtFinalWorkPoint = false;
+        waitingAtTravelPoint = false;
         shouldSnapAfterShortMove = snapToWorkPointAfterShortMove && (!stopAtLastRoutinePoint || GetValidPointCount() <= 1);
         snapMoveUntil = Time.time + Mathf.Max(0.2f, maxCutsceneWalkSeconds);
         pointIndex = GetFirstValidPointIndex();
@@ -297,6 +319,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         forceWalkingAnimationUntil = Time.time + Mathf.Max(minimumVisibleWalkSeconds, forcedWalkingAnimationSeconds);
         SetWalking(true);
         SetSimpleMotion(movingStyle);
+        SetSimpleMotionEnabled(useSimpleMotionWhileMoving);
     }
 
     public void FinishCurrentMove()
@@ -343,7 +366,15 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
 
         waitUntil = Time.time + waitAtPoint;
         SetWalking(false);
-        PlayWorkAnimation();
+        if (ShouldWorkAtCurrentPoint())
+        {
+            PlayWorkAnimation();
+        }
+        else
+        {
+            waitingAtTravelPoint = true;
+            SetSimpleMotionEnabled(false);
+        }
         FinishOrAdvanceAfterArrival();
     }
 
@@ -536,6 +567,16 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         return pointIndex >= 0 && pointIndex == GetLastValidPointIndex();
     }
 
+    private bool ShouldWorkAtCurrentPoint()
+    {
+        if (!stopAtLastRoutinePoint)
+        {
+            return true;
+        }
+
+        return IsCurrentPointLastValidPoint();
+    }
+
     private int GetLastValidPointIndex()
     {
         if (routinePoints == null)
@@ -626,6 +667,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
     private void PlayWorkAnimation()
     {
         SetSimpleMotion(workingStyle);
+        SetSimpleMotionEnabled(true);
 
         if (animator == null)
         {
@@ -674,6 +716,14 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         if (simpleMotion != null)
         {
             simpleMotion.SetWorkStyle(style);
+        }
+    }
+
+    private void SetSimpleMotionEnabled(bool enabled)
+    {
+        if (simpleMotion != null)
+        {
+            simpleMotion.SetMotionEnabled(enabled);
         }
     }
 
