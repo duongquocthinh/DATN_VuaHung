@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class HeraldQuestStarter : MonoBehaviour, IInteractable
 {
-    [SerializeField] private string npcName = "Nguoi truyen lenh";
-    [SerializeField] private string orderMessage = "Vua Hung truyen lenh tim le vat y nghia nhat. Moi nguoi hay bat dau chuan bi!";
+    [SerializeField] private string npcName = "Người truyền lệnh";
+    [SerializeField] private string orderMessage = "Vua Hùng truyền lệnh tìm lễ vật ý nghĩa nhất. Mọi người hãy bắt đầu chuẩn bị!";
     [SerializeField] private VillageRoutineNPC[] villagers;
 
     [Header("Simple cutscene")]
@@ -26,11 +26,25 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
     [SerializeField] private AudioSource voiceSource;
     [SerializeField] private AudioClip[] cutsceneVoiceClips;
 
+    [Header("Village reaction camera")]
+    [SerializeField] private Camera cutsceneCamera;
+    [SerializeField] private Transform[] readingCameraPoints;
+    [SerializeField] private Transform workStartCameraPoint;
+    [SerializeField] private float cameraMoveDuration = 2.5f;
+    [SerializeField] private float watchVillagersAfterOrder = 3f;
+
     [Header("Villager auto setup")]
     [SerializeField] private bool autoFindMeshyVillagers;
     [SerializeField] private string autoVillagerNameContains = "Meshy_AI_Village";
     [SerializeField] private float autoRoutineDistance = 3f;
     [SerializeField] private float autoRoutineSideOffset = 1.4f;
+    [Header("Deadline")]
+    [SerializeField] private OfferingDeadlineTimer offeringDeadlineTimer;
+    [SerializeField] private bool startDeadlineAfterOrder = true;
+    [Header("Player")]
+    [SerializeField] private MonoBehaviour[] playerControlScripts;
+    [SerializeField] private CharacterController playerController;
+    [SerializeField] private GameObject playerObject;
 
     [Header("Position safety")]
     [SerializeField] private bool keepOriginalHeight = true;
@@ -46,6 +60,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
     private GUIStyle dialogueTitleStyle;
     private GUIStyle dialogueTextStyle;
     private bool autoVillagersConfigured;
+    private MonoBehaviour[] autoPlayerControlScripts;
 
     public bool IsRunningCutscene
     {
@@ -82,6 +97,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
 
         NotificationUI.ShowMessage(orderMessage, 4f);
         StartVillagers();
+        StartDeadlineTimerIfNeeded();
     }
 
     public void StartQuestCutscene()
@@ -110,6 +126,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         }
 
         isRunningCutscene = true;
+        SetPlayerControls(false);
         float fixedY = transform.position.y;
 
         if (animator != null)
@@ -136,7 +153,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
                 }
 
                 float waitTime = PlayVoiceClip(i, lineDuration);
-                yield return new WaitForSeconds(waitTime);
+                yield return StartCoroutine(ShowReadingCameraPoint(i, waitTime));
             }
         }
         else
@@ -148,6 +165,13 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         HideDialogue();
 
         StartVillagers();
+
+        if (workStartCameraPoint != null && watchVillagersAfterOrder > 0f)
+        {
+            yield return StartCoroutine(MoveCutsceneCameraTo(workStartCameraPoint, cameraMoveDuration));
+            yield return new WaitForSeconds(watchVillagersAfterOrder);
+            FinishVillagerMoves();
+        }
 
         if (standBesideKingPoint != null)
         {
@@ -182,6 +206,8 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
             SetWalking(false);
         }
 
+        SetPlayerControls(true);
+        StartDeadlineTimerIfNeeded();
         isRunningCutscene = false;
     }
 
@@ -229,6 +255,77 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         voiceSource.clip = cutsceneVoiceClips[index];
         voiceSource.Play();
         return Mathf.Max(fallbackDuration, cutsceneVoiceClips[index].length + 0.3f);
+    }
+
+    private IEnumerator ShowReadingCameraPoint(int lineIndex, float waitTime)
+    {
+        if (readingCameraPoints == null || readingCameraPoints.Length == 0)
+        {
+            yield return new WaitForSeconds(waitTime);
+            yield break;
+        }
+
+        Transform cameraPoint = readingCameraPoints[Mathf.Min(lineIndex, readingCameraPoints.Length - 1)];
+        if (cameraPoint == null)
+        {
+            yield return new WaitForSeconds(waitTime);
+            yield break;
+        }
+
+        float moveDuration = Mathf.Min(Mathf.Max(0f, cameraMoveDuration), Mathf.Max(0f, waitTime));
+        if (moveDuration > 0f)
+        {
+            yield return StartCoroutine(MoveCutsceneCameraTo(cameraPoint, moveDuration));
+        }
+
+        float remainingWait = waitTime - moveDuration;
+        if (remainingWait > 0f)
+        {
+            yield return new WaitForSeconds(remainingWait);
+        }
+    }
+
+    private IEnumerator MoveCutsceneCameraTo(Transform targetPoint, float duration)
+    {
+        if (targetPoint == null)
+        {
+            yield break;
+        }
+
+        if (cutsceneCamera == null)
+        {
+            cutsceneCamera = Camera.main;
+        }
+
+        if (cutsceneCamera == null)
+        {
+            yield break;
+        }
+
+        Transform cameraTransform = cutsceneCamera.transform;
+        Vector3 startPosition = cameraTransform.position;
+        Quaternion startRotation = cameraTransform.rotation;
+        Quaternion targetRotation = GetCutsceneCameraRotation(targetPoint);
+        float elapsed = 0f;
+        float safeDuration = Mathf.Max(0.01f, duration);
+
+        while (elapsed < safeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / safeDuration);
+            cameraTransform.position = Vector3.Lerp(startPosition, targetPoint.position, t);
+            cameraTransform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            yield return null;
+        }
+
+        cameraTransform.position = targetPoint.position;
+        cameraTransform.rotation = targetRotation;
+    }
+    private Quaternion GetCutsceneCameraRotation(Transform targetPoint)
+    {
+        Vector3 eulerAngles = targetPoint.rotation.eulerAngles;
+        eulerAngles.z = 0f;
+        return Quaternion.Euler(eulerAngles);
     }
 
     private void OnGUI()
@@ -282,10 +379,92 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         dialogueTextStyle.fontSize = Mathf.Clamp(Screen.height / 38, 18, 25);
         dialogueTextStyle.normal.textColor = Color.white;
     }
+    private void SetPlayerControls(bool enabled)
+    {
+        FindPlayerControlsIfNeeded();
+
+        if (playerControlScripts != null)
+        {
+            for (int i = 0; i < playerControlScripts.Length; i++)
+            {
+                if (playerControlScripts[i] != null)
+                {
+                    playerControlScripts[i].enabled = enabled;
+                }
+            }
+        }
+
+        if (autoPlayerControlScripts != null)
+        {
+            for (int i = 0; i < autoPlayerControlScripts.Length; i++)
+            {
+                if (autoPlayerControlScripts[i] != null)
+                {
+                    autoPlayerControlScripts[i].enabled = enabled;
+                }
+            }
+        }
+
+        if (playerController != null)
+        {
+            playerController.enabled = enabled;
+        }
+
+        Cursor.lockState = enabled ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !enabled;
+    }
+
+    private void FindPlayerControlsIfNeeded()
+    {
+        if (playerController != null && autoPlayerControlScripts != null)
+        {
+            return;
+        }
+
+        if (playerObject == null)
+        {
+            playerObject = GameObject.FindGameObjectWithTag("Player");
+        }
+
+        if (playerObject == null)
+        {
+            playerObject = GameObject.Find("Player");
+        }
+
+        if (playerObject == null)
+        {
+            return;
+        }
+
+        if (playerController == null)
+        {
+            playerController = playerObject.GetComponent<CharacterController>();
+        }
+
+        MonoBehaviour[] scripts = playerObject.GetComponents<MonoBehaviour>();
+        var controls = new System.Collections.Generic.List<MonoBehaviour>();
+
+        for (int i = 0; i < scripts.Length; i++)
+        {
+            if (scripts[i] == null)
+            {
+                continue;
+            }
+
+            string scriptName = scripts[i].GetType().Name;
+            if (scriptName == "PlayerMovement" || scriptName == "MouseMovement" || scriptName == "PlayerAttack")
+            {
+                controls.Add(scripts[i]);
+            }
+        }
+
+        autoPlayerControlScripts = controls.ToArray();
+    }
 
     private void StartVillagers()
     {
         EnsureAutoVillagers();
+        EnsureSceneVillagers();
 
         if (villagers == null)
         {
@@ -301,6 +480,83 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         }
     }
 
+    private void StartDeadlineTimerIfNeeded()
+    {
+        if (!startDeadlineAfterOrder)
+        {
+            return;
+        }
+
+        if (offeringDeadlineTimer == null)
+        {
+            offeringDeadlineTimer = FindObjectOfType<OfferingDeadlineTimer>();
+        }
+
+        if (offeringDeadlineTimer == null)
+        {
+            offeringDeadlineTimer = gameObject.AddComponent<OfferingDeadlineTimer>();
+        }
+
+        if (offeringDeadlineTimer != null)
+        {
+            offeringDeadlineTimer.StartTimer();
+        }
+    }
+
+    private void FinishVillagerMoves()
+    {
+        EnsureSceneVillagers();
+
+        if (villagers == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < villagers.Length; i++)
+        {
+            if (villagers[i] != null)
+            {
+                villagers[i].FinishCurrentMove();
+            }
+        }
+    }
+
+    private void EnsureSceneVillagers()
+    {
+        bool hasMissingVillager = villagers == null || villagers.Length == 0;
+        if (!hasMissingVillager)
+        {
+            for (int i = 0; i < villagers.Length; i++)
+            {
+                if (villagers[i] == null)
+                {
+                    hasMissingVillager = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasMissingVillager)
+        {
+            return;
+        }
+
+        VillageRoutineNPC[] foundVillagers = FindObjectsOfType<VillageRoutineNPC>(true);
+        System.Collections.Generic.List<VillageRoutineNPC> activeVillagers = new System.Collections.Generic.List<VillageRoutineNPC>();
+
+        for (int i = 0; i < foundVillagers.Length; i++)
+        {
+            if (foundVillagers[i] != null && foundVillagers[i].gameObject.activeInHierarchy)
+            {
+                activeVillagers.Add(foundVillagers[i]);
+            }
+        }
+
+        if (activeVillagers.Count > 0)
+        {
+            villagers = activeVillagers.ToArray();
+        }
+    }
     private void EnsureAutoVillagers()
     {
         if (autoVillagersConfigured || !autoFindMeshyVillagers || (villagers != null && villagers.Length > 0))
@@ -401,15 +657,15 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         switch (workStyle)
         {
             case SimpleVillagerWorkMotion.WorkStyle.GatherLeaves:
-                return "Dang hai la dong";
+                return "Đang hái lá dong";
             case SimpleVillagerWorkMotion.WorkStyle.Cook:
-                return "Dang chuan bi bep nau";
+                return "Đang chuẩn bị bếp nấu";
             case SimpleVillagerWorkMotion.WorkStyle.PoundRice:
-                return "Dang gia gao nep";
+                return "Đang giã gạo nếp";
             case SimpleVillagerWorkMotion.WorkStyle.SitByFire:
-                return "Dang ngoi canh bep lua";
+                return "Đang ngồi cạnh bếp lửa";
             default:
-                return "Dang phu giup dan lang";
+                return "Đang phụ giúp dân làng";
         }
     }
 

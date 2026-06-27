@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
 public class SelectionManager : MonoBehaviour
@@ -20,11 +20,11 @@ public class SelectionManager : MonoBehaviour
     [SerializeField] private float interactionDistance = 10f;
 
     private static readonly Vector2 SmallRecipePanelSize = new Vector2(420f, 190f);
-    private static readonly Vector2 LargeRecipePanelSize = new Vector2(560f, 360f);
+    private static readonly Vector2 LargeRecipePanelSize = new Vector2(500f, 320f);
     private static readonly Vector2 SmallRecipeTextSize = new Vector2(340f, 110f);
-    private static readonly Vector2 LargeRecipeTextSize = new Vector2(470f, 270f);
+    private static readonly Vector2 LargeRecipeTextSize = new Vector2(420f, 238f);
     private static readonly Vector2 SmallTitlePanelSize = new Vector2(190f, 48f);
-    private static readonly Vector2 LargeTitlePanelSize = new Vector2(230f, 48f);
+    private static readonly Vector2 LargeTitlePanelSize = new Vector2(210f, 44f);
 
     private void Start()
     {
@@ -298,8 +298,8 @@ public class SelectionManager : MonoBehaviour
         if (bodyText != null)
         {
             bodyText.enableAutoSizing = true;
-            bodyText.fontSizeMin = useLargePanel ? 15f : 16f;
-            bodyText.fontSizeMax = useLargePanel ? 22f : 23f;
+            bodyText.fontSizeMin = useLargePanel ? 14f : 16f;
+            bodyText.fontSizeMax = useLargePanel ? 20f : 23f;
             bodyText.alignment = bodyAlignment;
         }
     }
@@ -362,3 +362,4 @@ public class SelectionManager : MonoBehaviour
         return null;
     }
 }
+

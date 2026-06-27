@@ -35,19 +35,19 @@ public class HarvestableResource : MonoBehaviour, IInteractable
     {
         if (harvestOnce && harvested)
         {
-            NotificationUI.ShowMessage("Da thu hoach roi.");
+            NotificationUI.ShowMessage("Đã thu hoạch rồi.");
             return;
         }
 
         if (InventorySystem.Instance == null)
         {
-            NotificationUI.ShowMessage("Khong tim thay InventorySystem.");
+            NotificationUI.ShowMessage("Không tìm thấy InventorySystem.");
             return;
         }
 
         if (!InventorySystem.Instance.AddItem(itemName, Mathf.Max(1, amount)))
         {
-            NotificationUI.ShowMessage("Tui do da day.");
+            NotificationUI.ShowMessage("Túi đồ đã đầy.");
             return;
         }
 
@@ -57,7 +57,7 @@ public class HarvestableResource : MonoBehaviour, IInteractable
         }
 
         harvested = true;
-        NotificationUI.ShowMessage("Da thu hoach " + itemName + " x" + Mathf.Max(1, amount) + ".");
+        NotificationUI.ShowMessage("Đã thu hoạch " + itemName + " x" + Mathf.Max(1, amount) + ".");
 
         if (createEmptyFieldPatch)
         {
@@ -113,7 +113,6 @@ public class HarvestableResource : MonoBehaviour, IInteractable
         }
 
         harvested = false;
-        NotificationUI.ShowMessage(itemName + " da moc lai.", 2f);
     }
 
     private void CreateEmptyFieldPatch()

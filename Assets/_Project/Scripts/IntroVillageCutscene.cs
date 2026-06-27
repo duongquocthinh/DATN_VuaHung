@@ -109,7 +109,7 @@ public class IntroVillageCutscene : MonoBehaviour
             }
         }
 
-        NotificationUI.ShowMessage("Nhiem vu cua Lang Lieu: thu thap nguyen lieu, lam banh va dang len Vua Hung.", 5f);
+        NotificationUI.ShowMessage("Nhiệm vụ của Lang Liêu: thu thập nguyên liệu, làm bánh và dâng lên Vua Hùng.", 5f);
 
         cameraTransform.localPosition = originalCameraLocalPosition;
         cameraTransform.localRotation = originalCameraLocalRotation;

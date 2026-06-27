@@ -14,15 +14,23 @@ public class SimpleVillagerWorkMotion : MonoBehaviour
     }
 
     [SerializeField] private WorkStyle workStyle = WorkStyle.Idle;
-    [SerializeField] private bool lookAtPlayerWhenNear = true;
+    [SerializeField] private bool lookAtPlayerWhenNear = false;
     [SerializeField] private Transform player;
     [SerializeField] private float lookDistance = 5f;
     [SerializeField] private float lookTurnSpeed = 3f;
-    [SerializeField] private float motionStrength = 1f;
+    [SerializeField] private float motionStrength = 0.25f;
     [SerializeField] private float randomTimeOffset;
+    [SerializeField] private Transform motionTarget;
 
     private Vector3 startLocalPosition;
     private Quaternion startLocalRotation;
+
+    private void Awake()
+    {
+        // Keep placeholder NPC motion subtle even if older prefab values were serialized.
+        lookAtPlayerWhenNear = false;
+        motionStrength = Mathf.Clamp(motionStrength, 0f, 0.25f);
+    }
 
     public void SetWorkStyle(WorkStyle newStyle)
     {
@@ -31,8 +39,13 @@ public class SimpleVillagerWorkMotion : MonoBehaviour
 
     private void Start()
     {
-        startLocalPosition = transform.localPosition;
-        startLocalRotation = transform.localRotation;
+        if (motionTarget == null)
+        {
+            motionTarget = FindMotionTarget();
+        }
+
+        startLocalPosition = motionTarget.localPosition;
+        startLocalRotation = motionTarget.localRotation;
 
         if (Mathf.Approximately(randomTimeOffset, 0f))
         {
@@ -51,7 +64,11 @@ public class SimpleVillagerWorkMotion : MonoBehaviour
 
     private void Update()
     {
-        ApplyWorkMotion();
+        if (motionTarget != null)
+        {
+            ApplyWorkMotion();
+        }
+
         LookAtPlayerIfNear();
     }
 
@@ -102,8 +119,27 @@ public class SimpleVillagerWorkMotion : MonoBehaviour
                 break;
         }
 
-        transform.localPosition = startLocalPosition + positionOffset * motionStrength;
-        transform.localRotation = startLocalRotation * Quaternion.Euler(rotationOffset * motionStrength);
+        motionTarget.localPosition = startLocalPosition + positionOffset * motionStrength;
+        motionTarget.localRotation = startLocalRotation * Quaternion.Euler(rotationOffset * motionStrength);
+    }
+
+    private Transform FindMotionTarget()
+    {
+        if (GetComponent<VillageRoutineNPC>() == null)
+        {
+            return transform;
+        }
+
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null && renderers[i].transform != transform)
+            {
+                return renderers[i].transform;
+            }
+        }
+
+        return transform;
     }
 
     private void LookAtPlayerIfNear()

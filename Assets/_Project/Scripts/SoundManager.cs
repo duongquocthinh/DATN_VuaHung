@@ -12,6 +12,9 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioClip grindingSound;
     [SerializeField] private AudioClip cookingSound;
     [SerializeField] private AudioClip successSound;
+    [SerializeField] private float maxCookingSoundDuration = 2.5f;
+
+    private AudioSource cookingSource;
 
     private void Awake()
     {
@@ -38,7 +41,7 @@ public class SoundManager : MonoBehaviour
 
     public void PlayCooking()
     {
-        PlayOneShot(cookingSound);
+        PlayCookingOneShot();
     }
 
     public void PlaySuccess()
@@ -89,5 +92,51 @@ public class SoundManager : MonoBehaviour
             sfxSource.playOnAwake = false;
             sfxSource.volume = 1f;
         }
+    }
+
+    private void PlayCookingOneShot()
+    {
+        if (cookingSound == null)
+        {
+            return;
+        }
+
+        EnsureCookingSource();
+        if (cookingSource == null)
+        {
+            PlayOneShot(cookingSound);
+            return;
+        }
+
+        cookingSource.Stop();
+        cookingSource.clip = cookingSound;
+        cookingSource.loop = false;
+        cookingSource.Play();
+
+        CancelInvoke(nameof(StopCookingSound));
+        if (maxCookingSoundDuration > 0f)
+        {
+            Invoke(nameof(StopCookingSound), Mathf.Min(maxCookingSoundDuration, cookingSound.length));
+        }
+    }
+
+    private void StopCookingSound()
+    {
+        if (cookingSource != null)
+        {
+            cookingSource.Stop();
+        }
+    }
+
+    private void EnsureCookingSource()
+    {
+        if (cookingSource != null)
+        {
+            return;
+        }
+
+        cookingSource = gameObject.AddComponent<AudioSource>();
+        cookingSource.playOnAwake = false;
+        cookingSource.volume = 1f;
     }
 }

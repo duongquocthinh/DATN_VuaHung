@@ -15,7 +15,7 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [SerializeField] private string questPanelTitle = "Vua Hung";
     [SerializeField] private bool useLargeQuestPanel;
     [TextArea(2, 4)]
-    [SerializeField] private string simpleTurnInPrompt = "Nhan E de dang banh";
+    [SerializeField] private string simpleTurnInPrompt = "Nhấn E để dâng bánh";
     [TextArea(2, 4)]
     [SerializeField] private string completedQuestPanelMessage;
 
@@ -36,11 +36,16 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [SerializeField] private AudioClip endingVoiceClip;
     [TextArea(2, 5)]
     [SerializeField] private string[] endingStoryLines;
+    [Header("End Game")]
+    [SerializeField] private bool quitGameAfterEndingStory = true;
+    [SerializeField] private float quitDelayAfterEndingStory = 2.0f;
 
     private bool questCompleted;
     private bool showingEndingStory;
     private string currentEndingText;
     private GUIStyle endingTextStyle;
+
+    public bool IsQuestCompleted { get { return questCompleted; } }
 
     public string QuestPanelTitle { get { return questPanelTitle; } }
     public bool UseLargeQuestPanel { get { return useLargeQuestPanel; } }
@@ -68,7 +73,7 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
                 return completedQuestPanelMessage;
             }
 
-            return "Nhiem vu da hoan thanh.\nCam on ban da dang banh len Vua Hung.";
+            return "Nhiệm vụ đã hoàn thành.\nCảm ơn bạn đã dâng bánh lên Vua Hùng.";
         }
 
         if (!string.IsNullOrWhiteSpace(simpleTurnInPrompt))
@@ -76,20 +81,20 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
             return simpleTurnInPrompt;
         }
 
-        return "Nhan E de dang banh";
+        return "Nhấn E để dâng bánh";
     }
 
     public void Interact()
     {
         if (questCompleted)
         {
-            NotificationUI.ShowMessage("Nhiem vu da hoan thanh. Lang Lieu da dang banh cho Vua Hung.", 4f);
+            NotificationUI.ShowMessage("Nhiệm vụ đã hoàn thành. Lang Liêu đã dâng bánh cho Vua Hùng.", 4f);
             return;
         }
 
         if (InventorySystem.Instance == null)
         {
-            NotificationUI.ShowMessage("Khong tim thay InventorySystem.");
+            NotificationUI.ShowMessage("Không tìm thấy InventorySystem.");
             return;
         }
 
@@ -99,9 +104,9 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         if (!hasFirstItem || !hasSecondItem)
         {
             NotificationUI.ShowMessage(
-                "Can " + requiredFirstItem + " x" + requiredFirstAmount
-                + " va " + requiredSecondItem + " x" + requiredSecondAmount
-                + " de dang len Vua Hung.",
+                "Cần " + requiredFirstItem + " x" + requiredFirstAmount
+                + " và " + requiredSecondItem + " x" + requiredSecondAmount
+                + " để dâng lên Vua Hùng.",
                 4f
             );
             return;
@@ -114,12 +119,7 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         }
 
         questCompleted = true;
-        if (SoundManager.Instance != null)
-        {
-            SoundManager.Instance.PlaySuccess();
-        }
-
-        NotificationUI.ShowMessage("Hoan thanh! Vua Hung da nhan le vat cua Lang Lieu.", 5f);
+        NotificationUI.ShowMessage("Hoàn thành! Vua Hùng đã nhận lễ vật của Lang Liêu.", 5f);
 
         if (showOfferingCutscene || showEndingStory)
         {
@@ -191,10 +191,10 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         {
             linesToShow = new[]
             {
-                "Vua Hung rat hai long voi le vat cua Lang Lieu.",
-                "Banh Chung tuong trung cho dat, noi goi tron san vat cua dong ruong.",
-                "Banh Giay tuong trung cho troi, the hien long biet on to tien va troi dat.",
-                "Tu do, Banh Chung va Banh Giay tro thanh bieu tuong tot dep cua dan toc."
+                "Vua Hùng rất hài lòng với lễ vật của Lang Liêu.",
+                "Bánh Chưng tượng trưng cho đất, nơi gói trọn sản vật của đồng ruộng.",
+                "Bánh Giầy tượng trưng cho trời, thể hiện lòng biết ơn tổ tiên và trời đất.",
+                "Từ đó, Bánh Chưng và Bánh Giầy trở thành biểu tượng tốt đẹp của dân tộc."
             };
         }
 
@@ -226,6 +226,12 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
 
         currentEndingText = "";
         showingEndingStory = false;
+
+        if (quitGameAfterEndingStory)
+        {
+            yield return new WaitForSeconds(Mathf.Max(0f, quitDelayAfterEndingStory));
+            EndGame();
+        }
     }
 
     private void OnGUI()
@@ -257,5 +263,14 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         );
 
         GUI.Label(textRect, currentEndingText, endingTextStyle);
+    }
+
+    private void EndGame()
+    {
+    #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+    #else
+    Application.Quit();
+    #endif
     }
 }

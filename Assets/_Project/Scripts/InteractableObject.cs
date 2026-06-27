@@ -45,7 +45,7 @@ public class InteractableObject : MonoBehaviour, IInteractable
                     SoundManager.Instance.PlayPickup();
                 }
 
-                NotificationUI.ShowMessage("Da nhat " + ItemName + " x" + pickupAmount + ".", 2f);
+                NotificationUI.ShowMessage("Đã nhặt " + ItemName + " x" + pickupAmount + ".", 2f);
 
                 if (respawnAfterPickup)
                 {
@@ -58,7 +58,7 @@ public class InteractableObject : MonoBehaviour, IInteractable
             }
             else
             {
-                NotificationUI.ShowMessage("Tui do da day.", 2f);
+                NotificationUI.ShowMessage("Túi đồ đã đầy.", 2f);
             }
         }
         else

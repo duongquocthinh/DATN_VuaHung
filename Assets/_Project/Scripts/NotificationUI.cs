@@ -34,6 +34,7 @@ public class NotificationUI : MonoBehaviour
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
 
+        KeepPanelOnScreen();
         HideImmediate();
     }
 
@@ -84,6 +85,25 @@ public class NotificationUI : MonoBehaviour
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 0f;
+        }
+    }
+
+    private void KeepPanelOnScreen()
+    {
+        RectTransform rectTransform = transform as RectTransform;
+        if (rectTransform == null)
+        {
+            return;
+        }
+
+        bool anchoredToTop = Mathf.Approximately(rectTransform.anchorMin.y, 1f)
+            && Mathf.Approximately(rectTransform.anchorMax.y, 1f);
+
+        if (anchoredToTop && rectTransform.anchoredPosition.y > 0f)
+        {
+            Vector2 position = rectTransform.anchoredPosition;
+            position.y = -Mathf.Abs(position.y);
+            rectTransform.anchoredPosition = position;
         }
     }
 }

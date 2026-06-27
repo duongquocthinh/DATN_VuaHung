@@ -11,6 +11,12 @@ public class AnimalHealth : MonoBehaviour
     [SerializeField] private float deathDelay = 1.1f;
     [SerializeField] private float dropGroundOffset = 0.18f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip deathSound;
+    [SerializeField] private float maxDeathSoundDuration = 2.2f;
+    [SerializeField] private float deathSoundVolume = 1f;
+    [SerializeField] private float deathSoundSpatialBlend = 1f;
+
     [Header("Respawn")]
     [SerializeField] private bool respawnAfterDeath;
     [SerializeField] private float respawnDelay = 45f;
@@ -74,6 +80,7 @@ public class AnimalHealth : MonoBehaviour
             animalCollider.enabled = false;
         }
 
+        PlayDeathSound();
         PlayTrigger("Death1");
         yield return new WaitForSeconds(deathDelay);
 
@@ -149,6 +156,33 @@ public class AnimalHealth : MonoBehaviour
                 audioSource.Play();
             }
         }
+    }
+
+    private void PlayDeathSound()
+    {
+        if (deathSound == null)
+        {
+            return;
+        }
+
+        GameObject soundObject = new GameObject(gameObject.name + "_DeathSound");
+        soundObject.transform.position = transform.position;
+
+        AudioSource source = soundObject.AddComponent<AudioSource>();
+        source.clip = deathSound;
+        source.volume = Mathf.Clamp01(deathSoundVolume);
+        source.spatialBlend = Mathf.Clamp01(deathSoundSpatialBlend);
+        source.playOnAwake = false;
+        source.loop = false;
+        source.Play();
+
+        float stopAfter = deathSound.length;
+        if (maxDeathSoundDuration > 0f)
+        {
+            stopAfter = Mathf.Min(stopAfter, maxDeathSoundDuration);
+        }
+
+        Destroy(soundObject, Mathf.Max(0.05f, stopAfter));
     }
 
     private void SpawnDrops()
