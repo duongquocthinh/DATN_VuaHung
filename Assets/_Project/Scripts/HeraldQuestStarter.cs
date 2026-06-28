@@ -217,8 +217,8 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
             SetWalking(false);
         }
 
-        SetPlayerControls(true);
         MoveRoyalCharactersToOfferingArea();
+        SetPlayerControls(true);
         StartDeadlineTimerIfNeeded();
         isRunningCutscene = false;
     }
