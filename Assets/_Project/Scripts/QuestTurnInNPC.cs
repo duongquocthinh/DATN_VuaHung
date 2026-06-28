@@ -22,10 +22,20 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [Header("Offering Cutscene")]
     [SerializeField] private bool showOfferingCutscene = true;
     [SerializeField] private Camera offeringCamera;
+    [SerializeField] private Transform ceremonyCameraPoint;
+    [SerializeField] private Transform ceremonyLookAtPoint;
+    [SerializeField] private Transform playerOfferingPoint;
+    [SerializeField] private GameObject playerObject;
+    [SerializeField] private MonoBehaviour[] playerControlScripts;
+    [SerializeField] private CharacterController playerController;
+    [SerializeField] private Animator offererAnimator;
+    [SerializeField] private string offerTriggerName = "Offer";
     [SerializeField] private Transform offeringProp;
     [SerializeField] private Vector3 offeringStartLocalPosition = new Vector3(0f, -0.45f, 0.85f);
     [SerializeField] private Vector3 offeringEndLocalPosition = new Vector3(0f, -0.05f, 0.75f);
     [SerializeField] private Vector3 offeringLocalEuler = new Vector3(18f, 0f, 0f);
+    [SerializeField] private float cameraMoveDuration = 1.6f;
+    [SerializeField] private float ceremonyBeforeOfferDelay = 0.8f;
     [SerializeField] private float offeringMoveDuration = 1.6f;
     [SerializeField] private float offeringHoldDuration = 1.2f;
 
@@ -44,6 +54,9 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     private bool showingEndingStory;
     private string currentEndingText;
     private GUIStyle endingTextStyle;
+    private Vector3 originalCameraPosition;
+    private Quaternion originalCameraRotation;
+    private bool hasOriginalCameraTransform;
 
     public bool IsQuestCompleted { get { return questCompleted; } }
 
@@ -129,17 +142,24 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
 
     private IEnumerator CompleteEndingRoutine()
     {
+        SetPlayerControls(false);
         yield return StartCoroutine(ShowOfferingRoutine());
 
         if (showEndingStory)
         {
             yield return StartCoroutine(ShowEndingStoryRoutine());
         }
+
+        if (!quitGameAfterEndingStory)
+        {
+            RestoreOfferingCamera();
+            SetPlayerControls(true);
+        }
     }
 
     private IEnumerator ShowOfferingRoutine()
     {
-        if (!showOfferingCutscene || offeringProp == null)
+        if (!showOfferingCutscene)
         {
             yield break;
         }
@@ -150,6 +170,17 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         }
 
         if (offeringCamera == null)
+        {
+            yield break;
+        }
+
+        SaveOfferingCamera();
+        MovePlayerToOfferingPoint();
+        PlayOfferAnimation();
+        yield return StartCoroutine(MoveOfferingCameraToCeremonyPoint());
+        yield return new WaitForSeconds(Mathf.Max(0f, ceremonyBeforeOfferDelay));
+
+        if (offeringProp == null)
         {
             yield break;
         }
@@ -182,6 +213,180 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         offeringProp.SetParent(originalParent);
         offeringProp.localPosition = originalLocalPosition;
         offeringProp.localRotation = originalLocalRotation;
+    }
+
+    private void SaveOfferingCamera()
+    {
+        if (offeringCamera == null || hasOriginalCameraTransform)
+        {
+            return;
+        }
+
+        originalCameraPosition = offeringCamera.transform.position;
+        originalCameraRotation = offeringCamera.transform.rotation;
+        hasOriginalCameraTransform = true;
+    }
+
+    private void RestoreOfferingCamera()
+    {
+        if (offeringCamera == null || !hasOriginalCameraTransform)
+        {
+            return;
+        }
+
+        offeringCamera.transform.position = originalCameraPosition;
+        offeringCamera.transform.rotation = originalCameraRotation;
+    }
+
+    private IEnumerator MoveOfferingCameraToCeremonyPoint()
+    {
+        if (offeringCamera == null || ceremonyCameraPoint == null)
+        {
+            yield break;
+        }
+
+        Transform cameraTransform = offeringCamera.transform;
+        Vector3 startPosition = cameraTransform.position;
+        Quaternion startRotation = cameraTransform.rotation;
+        Quaternion targetRotation = GetCeremonyCameraRotation();
+        float elapsed = 0f;
+        float duration = Mathf.Max(0.05f, cameraMoveDuration);
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            cameraTransform.position = Vector3.Lerp(startPosition, ceremonyCameraPoint.position, t);
+            cameraTransform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+            yield return null;
+        }
+
+        cameraTransform.position = ceremonyCameraPoint.position;
+        cameraTransform.rotation = targetRotation;
+    }
+
+    private Quaternion GetCeremonyCameraRotation()
+    {
+        if (ceremonyLookAtPoint != null && ceremonyCameraPoint != null)
+        {
+            Vector3 direction = ceremonyLookAtPoint.position - ceremonyCameraPoint.position;
+            if (direction.sqrMagnitude > 0.001f)
+            {
+                return Quaternion.LookRotation(direction.normalized, Vector3.up);
+            }
+        }
+
+        return ceremonyCameraPoint != null ? ceremonyCameraPoint.rotation : offeringCamera.transform.rotation;
+    }
+
+    private void MovePlayerToOfferingPoint()
+    {
+        if (playerOfferingPoint == null)
+        {
+            return;
+        }
+
+        FindPlayerControlsIfNeeded();
+
+        if (playerObject == null)
+        {
+            return;
+        }
+
+        bool controllerWasEnabled = playerController != null && playerController.enabled;
+        if (playerController != null)
+        {
+            playerController.enabled = false;
+        }
+
+        playerObject.transform.position = playerOfferingPoint.position;
+        playerObject.transform.rotation = playerOfferingPoint.rotation;
+
+        if (playerController != null)
+        {
+            playerController.enabled = controllerWasEnabled;
+        }
+    }
+
+    private void PlayOfferAnimation()
+    {
+        if (offererAnimator == null || string.IsNullOrWhiteSpace(offerTriggerName))
+        {
+            return;
+        }
+
+        offererAnimator.SetTrigger(offerTriggerName);
+    }
+
+    private void SetPlayerControls(bool enabled)
+    {
+        FindPlayerControlsIfNeeded();
+
+        if (playerControlScripts != null)
+        {
+            for (int i = 0; i < playerControlScripts.Length; i++)
+            {
+                if (playerControlScripts[i] != null)
+                {
+                    playerControlScripts[i].enabled = enabled;
+                }
+            }
+        }
+
+        if (playerController != null)
+        {
+            playerController.enabled = enabled;
+        }
+
+        Cursor.lockState = enabled ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !enabled;
+    }
+
+    private void FindPlayerControlsIfNeeded()
+    {
+        if (playerObject == null)
+        {
+            playerObject = GameObject.FindGameObjectWithTag("Player");
+        }
+
+        if (playerObject == null)
+        {
+            playerObject = GameObject.Find("Player");
+        }
+
+        if (playerObject == null)
+        {
+            return;
+        }
+
+        if (playerController == null)
+        {
+            playerController = playerObject.GetComponent<CharacterController>();
+        }
+
+        if (playerControlScripts != null && playerControlScripts.Length > 0)
+        {
+            return;
+        }
+
+        MonoBehaviour[] scripts = playerObject.GetComponents<MonoBehaviour>();
+        var controls = new System.Collections.Generic.List<MonoBehaviour>();
+
+        for (int i = 0; i < scripts.Length; i++)
+        {
+            if (scripts[i] == null)
+            {
+                continue;
+            }
+
+            string scriptName = scripts[i].GetType().Name;
+            if (scriptName == "PlayerMovement" || scriptName == "MouseMovement" || scriptName == "PlayerAttack")
+            {
+                controls.Add(scripts[i]);
+            }
+        }
+
+        playerControlScripts = controls.ToArray();
     }
 
     private IEnumerator ShowEndingStoryRoutine()

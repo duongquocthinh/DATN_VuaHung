@@ -41,6 +41,16 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
     [Header("Deadline")]
     [SerializeField] private OfferingDeadlineTimer offeringDeadlineTimer;
     [SerializeField] private bool startDeadlineAfterOrder = true;
+
+    [Header("Royal offering area")]
+    [SerializeField] private bool moveRoyalCharactersToOfferingAreaAfterOrder;
+    [SerializeField] private Transform kingTransform;
+    [SerializeField] private Transform kingOfferingPoint;
+    [SerializeField] private Transform heraldOfferingPoint;
+    [SerializeField] private Animator kingAnimator;
+    [SerializeField] private string kingAfterMoveTriggerName = "";
+    [SerializeField] private string heraldAfterMoveTriggerName = "";
+
     [Header("Player")]
     [SerializeField] private MonoBehaviour[] playerControlScripts;
     [SerializeField] private CharacterController playerController;
@@ -97,6 +107,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
 
         NotificationUI.ShowMessage(orderMessage, 4f);
         StartVillagers();
+        MoveRoyalCharactersToOfferingArea();
         StartDeadlineTimerIfNeeded();
     }
 
@@ -207,6 +218,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         }
 
         SetPlayerControls(true);
+        MoveRoyalCharactersToOfferingArea();
         StartDeadlineTimerIfNeeded();
         isRunningCutscene = false;
     }
@@ -500,6 +512,43 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         if (offeringDeadlineTimer != null)
         {
             offeringDeadlineTimer.StartTimer();
+        }
+    }
+
+    private void MoveRoyalCharactersToOfferingArea()
+    {
+        if (!moveRoyalCharactersToOfferingAreaAfterOrder)
+        {
+            return;
+        }
+
+        MoveCharacterToPoint(kingTransform, kingOfferingPoint, false);
+        PlayAnimatorTrigger(kingAnimator, kingAfterMoveTriggerName);
+
+        if (heraldOfferingPoint != null)
+        {
+            MoveCharacterToPoint(transform, heraldOfferingPoint, true);
+            SetWalking(false);
+            PlayTrigger(heraldAfterMoveTriggerName);
+        }
+    }
+
+    private void MoveCharacterToPoint(Transform character, Transform point, bool applyHeraldModelOffset)
+    {
+        if (character == null || point == null)
+        {
+            return;
+        }
+
+        character.position = GetSafePosition(point.position, character.position.y);
+        character.rotation = applyHeraldModelOffset ? ApplyModelOffset(point.rotation) : point.rotation;
+    }
+
+    private void PlayAnimatorTrigger(Animator targetAnimator, string triggerName)
+    {
+        if (targetAnimator != null && !string.IsNullOrWhiteSpace(triggerName))
+        {
+            targetAnimator.SetTrigger(triggerName);
         }
     }
 
