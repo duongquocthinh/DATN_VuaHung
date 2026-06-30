@@ -4,6 +4,7 @@ using UnityEngine;
 public class IntroVillageCutscene : MonoBehaviour
 {
     [Header("Black Screen Intro")]
+    [SerializeField] private bool skipIntroForTesting;
     [SerializeField] private bool useBlackScreenIntro = true;
     [TextArea(2, 5)]
     [SerializeField] private string[] blackScreenLines;
@@ -44,6 +45,12 @@ public class IntroVillageCutscene : MonoBehaviour
 
     private void Start()
     {
+        if (skipIntroForTesting)
+        {
+            SkipIntroAndStartGameplay();
+            return;
+        }
+
         if (playOnStart)
         {
             StartCoroutine(PlayIntroRoutine());
@@ -52,7 +59,32 @@ public class IntroVillageCutscene : MonoBehaviour
 
     public void PlayIntro()
     {
+        if (skipIntroForTesting)
+        {
+            SkipIntroAndStartGameplay();
+            return;
+        }
+
         StartCoroutine(PlayIntroRoutine());
+    }
+
+    private void SkipIntroAndStartGameplay()
+    {
+        showingBlackScreen = false;
+        blackScreenText = "";
+
+        if (voiceSource != null)
+        {
+            voiceSource.Stop();
+        }
+
+        if (heraldToStart != null)
+        {
+            heraldToStart.CompleteOrderWithoutCutscene();
+        }
+
+        SetPlayerControls(true);
+        NotificationUI.ShowMessage("Da bo qua intro de test nhanh. Nhiem vu cua Lang Lieu da bat dau.", 4f);
     }
 
     private IEnumerator PlayIntroRoutine()

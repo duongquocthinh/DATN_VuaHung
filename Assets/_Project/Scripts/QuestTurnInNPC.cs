@@ -4,7 +4,7 @@ using TMPro;
 
 public class QuestTurnInNPC : MonoBehaviour, IInteractable
 {
-    [SerializeField] private string npcName = "Vua Hung";
+    [SerializeField] private string npcName = "Dang banh";
     [SerializeField] private string requiredFirstItem = "Banh Chung";
     [SerializeField] private int requiredFirstAmount = 1;
     [SerializeField] private string requiredSecondItem = "Banh Giay";
@@ -12,7 +12,7 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [SerializeField] private bool removeItemsOnComplete = true;
 
     [Header("Quest UI")]
-    [SerializeField] private string questPanelTitle = "Vua Hung";
+    [SerializeField] private string questPanelTitle = "Dang banh";
     [SerializeField] private bool useLargeQuestPanel;
     [TextArea(2, 4)]
     [SerializeField] private string simpleTurnInPrompt = "Nhấn E để dâng bánh";
@@ -44,8 +44,10 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [SerializeField] private float endingLineDuration = 4f;
     [SerializeField] private AudioSource endingVoiceSource;
     [SerializeField] private AudioClip endingVoiceClip;
+    [SerializeField] private AudioClip[] endingVoiceClips;
     [TextArea(2, 5)]
     [SerializeField] private string[] endingStoryLines;
+    [SerializeField] private bool closeInventoryUIWhenEndingStarts = true;
     [Header("End Game")]
     [SerializeField] private bool quitGameAfterEndingStory = true;
     [SerializeField] private float quitDelayAfterEndingStory = 2.0f;
@@ -143,6 +145,7 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     private IEnumerator CompleteEndingRoutine()
     {
         SetPlayerControls(false);
+        CloseInventoryUIIfNeeded();
         yield return StartCoroutine(ShowOfferingRoutine());
 
         if (showEndingStory)
@@ -406,7 +409,8 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         showingEndingStory = true;
 
         float endingVoiceDuration = 0f;
-        if (endingVoiceSource != null && endingVoiceClip != null)
+        bool useLineVoiceClips = endingVoiceClips != null && endingVoiceClips.Length > 0;
+        if (!useLineVoiceClips && endingVoiceSource != null && endingVoiceClip != null)
         {
             endingVoiceSource.Stop();
             endingVoiceSource.clip = endingVoiceClip;
@@ -420,6 +424,15 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
             {
                 currentEndingText = linesToShow[i];
                 float waitTime = endingLineDuration;
+                AudioClip lineVoiceClip = GetEndingLineVoiceClip(i);
+                if (endingVoiceSource != null && lineVoiceClip != null)
+                {
+                    endingVoiceSource.Stop();
+                    endingVoiceSource.clip = lineVoiceClip;
+                    endingVoiceSource.Play();
+                    waitTime = Mathf.Max(waitTime, lineVoiceClip.length + 0.3f);
+                }
+
                 if (linesToShow.Length == 1 && endingVoiceDuration > 0f)
                 {
                     waitTime = Mathf.Max(waitTime, endingVoiceDuration);
@@ -436,6 +449,30 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         {
             yield return new WaitForSeconds(Mathf.Max(0f, quitDelayAfterEndingStory));
             EndGame();
+        }
+    }
+
+    private AudioClip GetEndingLineVoiceClip(int index)
+    {
+        if (endingVoiceClips == null || index < 0 || index >= endingVoiceClips.Length)
+        {
+            return null;
+        }
+
+        return endingVoiceClips[index];
+    }
+
+    private void CloseInventoryUIIfNeeded()
+    {
+        if (!closeInventoryUIWhenEndingStarts || InventorySystem.Instance == null)
+        {
+            return;
+        }
+
+        InventorySystem.Instance.isOpen = false;
+        if (InventorySystem.Instance.inventoryScreenUI != null)
+        {
+            InventorySystem.Instance.inventoryScreenUI.SetActive(false);
         }
     }
 

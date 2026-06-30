@@ -21,6 +21,13 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
     [SerializeField] private float navMeshAgentRadius = 0.35f;
     [SerializeField] private float navMeshAgentHeight = 1.8f;
 
+    [Header("Crowd spacing")]
+    [SerializeField] private bool spreadOutAtRoutinePoints = true;
+    [SerializeField] private float routinePointSpreadRadius = 1.1f;
+    [SerializeField] private bool avoidOtherVillagers = true;
+    [SerializeField] private float avoidRadius = 0.85f;
+    [SerializeField] private float avoidStrength = 0.8f;
+
     [Header("Cutscene movement safety")]
     [SerializeField] private bool snapToWorkPointAfterShortMove = true;
     [SerializeField] private float maxCutsceneWalkSeconds = 2.0f;
@@ -63,6 +70,8 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
     private bool lastWalkingAnimatorValue;
     private Vector3 startEulerAngles;
     private float currentMoveSpeed;
+    private Vector3 routinePointOffset;
+    private VillageRoutineNPC[] nearbyVillagers;
 
     private void OnValidate()
     {
@@ -93,6 +102,8 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         routineStarted = startRoutineOnAwake;
         startEulerAngles = transform.eulerAngles;
         currentMoveSpeed = moveSpeed;
+        routinePointOffset = CreateRoutinePointOffset();
+        nearbyVillagers = FindObjectsOfType<VillageRoutineNPC>(true);
 
         if (navMeshAgent == null && ShouldPrepareNavMeshAgent())
         {
@@ -219,7 +230,8 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
 
     private void MoveManually(Transform target)
     {
-        Vector3 direction = target.position - transform.position;
+        Vector3 targetPosition = GetTargetPosition(target);
+        Vector3 direction = targetPosition - transform.position;
         direction.y = 0f;
 
         if (direction.magnitude <= stopDistance)
@@ -231,15 +243,23 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         SetWalking(true);
         SetSimpleMotion(movingStyle);
         SetSimpleMotionEnabled(useSimpleMotionWhileMoving);
-        Quaternion targetRotation = GetFacingRotation(direction.normalized);
+
+        Vector3 moveDirection = direction.normalized;
+        Vector3 avoidanceDirection = GetAvoidanceDirection();
+        if (avoidanceDirection.sqrMagnitude > 0.001f)
+        {
+            moveDirection = (moveDirection + avoidanceDirection * avoidStrength).normalized;
+        }
+
+        Quaternion targetRotation = GetFacingRotation(moveDirection);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
-        transform.position += direction.normalized * currentMoveSpeed * Time.deltaTime;
+        transform.position += moveDirection * currentMoveSpeed * Time.deltaTime;
     }
 
     private void MoveWithNavMeshAgent(Transform target)
     {
         ConfigureNavMeshAgent();
-        Vector3 destination = GetNavMeshDestination(target.position);
+        Vector3 destination = GetNavMeshDestination(GetTargetPosition(target));
 
         if (!navMeshAgent.hasPath || (navMeshAgent.destination - destination).sqrMagnitude > 0.04f)
         {
@@ -339,9 +359,10 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         }
 
         bool canUseAgent = CanUseNavMeshAgent();
+        Vector3 requestedTargetPosition = GetTargetPosition(target);
         Vector3 targetPosition = canUseAgent
-            ? GetNavMeshDestination(target.position)
-            : target.position;
+            ? GetNavMeshDestination(requestedTargetPosition)
+            : requestedTargetPosition;
         if (!canUseAgent)
         {
             targetPosition.y = transform.position.y;
@@ -458,7 +479,7 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
 
     private void StopNavMeshAgent()
     {
-        if (CanUseNavMeshAgent())
+        if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
         {
             navMeshAgent.ResetPath();
         }
@@ -472,6 +493,78 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
         }
 
         return requestedPosition;
+    }
+
+    private Vector3 GetTargetPosition(Transform target)
+    {
+        if (target == null)
+        {
+            return transform.position;
+        }
+
+        Vector3 targetPosition = target.position;
+        if (spreadOutAtRoutinePoints)
+        {
+            targetPosition += routinePointOffset;
+        }
+
+        return targetPosition;
+    }
+
+    private Vector3 CreateRoutinePointOffset()
+    {
+        if (!spreadOutAtRoutinePoints || routinePointSpreadRadius <= 0f)
+        {
+            return Vector3.zero;
+        }
+
+        int seed = Mathf.Abs(GetInstanceID());
+        float angle = (seed % 360) * Mathf.Deg2Rad;
+        float ring = 0.35f + ((seed / 360) % 100) / 100f * 0.65f;
+        return new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * routinePointSpreadRadius * ring;
+    }
+
+    private Vector3 GetAvoidanceDirection()
+    {
+        if (!avoidOtherVillagers || avoidRadius <= 0f)
+        {
+            return Vector3.zero;
+        }
+
+        if (nearbyVillagers == null || nearbyVillagers.Length == 0)
+        {
+            nearbyVillagers = FindObjectsOfType<VillageRoutineNPC>(true);
+        }
+
+        Vector3 avoidance = Vector3.zero;
+        float sqrRadius = avoidRadius * avoidRadius;
+
+        for (int i = 0; i < nearbyVillagers.Length; i++)
+        {
+            VillageRoutineNPC other = nearbyVillagers[i];
+            if (other == null || other == this || !other.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            Vector3 away = transform.position - other.transform.position;
+            away.y = 0f;
+            float sqrDistance = away.sqrMagnitude;
+            if (sqrDistance <= 0.001f || sqrDistance >= sqrRadius)
+            {
+                continue;
+            }
+
+            float weight = 1f - Mathf.Sqrt(sqrDistance) / avoidRadius;
+            avoidance += away.normalized * weight;
+        }
+
+        if (avoidance.sqrMagnitude <= 0.001f)
+        {
+            return Vector3.zero;
+        }
+
+        return avoidance.normalized;
     }
 
     public void ConfigureSimpleRoutine(
@@ -729,6 +822,11 @@ public class VillageRoutineNPC : MonoBehaviour, IInteractable
 
     private Quaternion GetFacingRotation(Vector3 direction)
     {
+        if (direction.sqrMagnitude < 0.001f)
+        {
+            return transform.rotation;
+        }
+
         Quaternion lookRotation = Quaternion.LookRotation(direction, Vector3.up);
         return Quaternion.Euler(startEulerAngles.x, lookRotation.eulerAngles.y, startEulerAngles.z);
     }

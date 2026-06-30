@@ -8,6 +8,9 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
     [SerializeField] private VillageRoutineNPC[] villagers;
 
     [Header("Simple cutscene")]
+    [SerializeField] private bool skipOrderCutsceneForTesting;
+    [SerializeField] private bool includeAllSceneVillagersWhenSkipping = true;
+    [SerializeField] private bool finishVillagerMovesWhenSkipping = true;
     [SerializeField] private bool playOnStart;
     [SerializeField] private float startDelay = 1f;
     [SerializeField] private bool useCutscene;
@@ -45,6 +48,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
     [Header("Royal offering area")]
     [SerializeField] private bool moveRoyalCharactersToOfferingAreaAfterOrder;
     [SerializeField] private Transform kingTransform;
+    [SerializeField] private Transform[] extraKingObjectsToMove;
     [SerializeField] private Transform kingOfferingPoint;
     [SerializeField] private Transform heraldOfferingPoint;
     [SerializeField] private Animator kingAnimator;
@@ -79,6 +83,12 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
 
     private void Start()
     {
+        if (skipOrderCutsceneForTesting)
+        {
+            CompleteOrderWithoutCutscene();
+            return;
+        }
+
         if (playOnStart)
         {
             StartCoroutine(StartAfterDelay());
@@ -117,6 +127,50 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
         {
             Interact();
         }
+    }
+
+    public void CompleteOrderWithoutCutscene()
+    {
+        if (started)
+        {
+            SetPlayerControls(true);
+            return;
+        }
+
+        started = true;
+        isRunningCutscene = false;
+        HideDialogue();
+
+        if (voiceSource != null)
+        {
+            voiceSource.Stop();
+        }
+
+        if (animator != null)
+        {
+            animator.applyRootMotion = false;
+        }
+
+        if (standBesideKingPoint != null)
+        {
+            MoveCharacterToPoint(transform, standBesideKingPoint, true);
+        }
+
+        SetWalking(false);
+        if (includeAllSceneVillagersWhenSkipping)
+        {
+            IncludeAllActiveSceneVillagers();
+        }
+
+        StartVillagers();
+        if (finishVillagerMovesWhenSkipping)
+        {
+            FinishVillagerMoves();
+        }
+
+        MoveRoyalCharactersToOfferingArea();
+        StartDeadlineTimerIfNeeded();
+        SetPlayerControls(true);
     }
 
     private IEnumerator StartAfterDelay()
@@ -522,7 +576,7 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
             return;
         }
 
-        MoveCharacterToPoint(kingTransform, kingOfferingPoint, false);
+        MoveKingGroupToOfferingPoint();
         PlayAnimatorTrigger(kingAnimator, kingAfterMoveTriggerName);
 
         if (heraldOfferingPoint != null)
@@ -542,6 +596,39 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
 
         character.position = GetSafePosition(point.position, character.position.y);
         character.rotation = applyHeraldModelOffset ? ApplyModelOffset(point.rotation) : point.rotation;
+    }
+
+    private void MoveKingGroupToOfferingPoint()
+    {
+        if (kingTransform == null || kingOfferingPoint == null)
+        {
+            return;
+        }
+
+        Vector3 originalKingPosition = kingTransform.position;
+        Quaternion originalKingRotation = kingTransform.rotation;
+        Vector3 targetKingPosition = GetSafePosition(kingOfferingPoint.position, kingTransform.position.y);
+        Quaternion targetKingRotation = kingOfferingPoint.rotation;
+
+        if (extraKingObjectsToMove != null)
+        {
+            for (int i = 0; i < extraKingObjectsToMove.Length; i++)
+            {
+                Transform extraObject = extraKingObjectsToMove[i];
+                if (extraObject == null || extraObject == kingTransform)
+                {
+                    continue;
+                }
+
+                Vector3 localOffset = Quaternion.Inverse(originalKingRotation) * (extraObject.position - originalKingPosition);
+                Quaternion localRotationOffset = Quaternion.Inverse(originalKingRotation) * extraObject.rotation;
+                extraObject.position = targetKingPosition + targetKingRotation * localOffset;
+                extraObject.rotation = targetKingRotation * localRotationOffset;
+            }
+        }
+
+        kingTransform.position = targetKingPosition;
+        kingTransform.rotation = targetKingRotation;
     }
 
     private void PlayAnimatorTrigger(Animator targetAnimator, string triggerName)
@@ -606,6 +693,39 @@ public class HeraldQuestStarter : MonoBehaviour, IInteractable
             villagers = activeVillagers.ToArray();
         }
     }
+
+    private void IncludeAllActiveSceneVillagers()
+    {
+        VillageRoutineNPC[] foundVillagers = FindObjectsOfType<VillageRoutineNPC>(true);
+        System.Collections.Generic.List<VillageRoutineNPC> activeVillagers = new System.Collections.Generic.List<VillageRoutineNPC>();
+
+        if (villagers != null)
+        {
+            for (int i = 0; i < villagers.Length; i++)
+            {
+                VillageRoutineNPC villager = villagers[i];
+                if (villager != null && villager.gameObject.activeInHierarchy && !activeVillagers.Contains(villager))
+                {
+                    activeVillagers.Add(villager);
+                }
+            }
+        }
+
+        for (int i = 0; i < foundVillagers.Length; i++)
+        {
+            VillageRoutineNPC villager = foundVillagers[i];
+            if (villager != null && villager.gameObject.activeInHierarchy && !activeVillagers.Contains(villager))
+            {
+                activeVillagers.Add(villager);
+            }
+        }
+
+        if (activeVillagers.Count > 0)
+        {
+            villagers = activeVillagers.ToArray();
+        }
+    }
+
     private void EnsureAutoVillagers()
     {
         if (autoVillagersConfigured || !autoFindMeshyVillagers || (villagers != null && villagers.Length > 0))
