@@ -3,7 +3,7 @@ using UnityEngine;
 public class OfferingDeadlineTimer : MonoBehaviour
 {
     [SerializeField] private bool startOnAwake = false;
-    [SerializeField] private float timeLimitSeconds = 300f;
+    [SerializeField] private float timeLimitSeconds = 900f;
     [SerializeField] private QuestTurnInNPC questTurnInNPC;
     [SerializeField] private string warningPrefix = "Thời gian còn lại";
     [SerializeField] private string failTitle = "Đã quá thời gian dâng bánh";

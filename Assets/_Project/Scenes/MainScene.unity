@@ -4116,6 +4116,7 @@ GameObject:
   - component: {fileID: 240902932}
   - component: {fileID: 240902931}
   - component: {fileID: 240902933}
+  - component: {fileID: 240902934}
   m_Layer: 0
   m_Name: Tray
   m_TagString: Untagged
@@ -4190,6 +4191,9 @@ MonoBehaviour:
   playerObject: {fileID: 493640417}
   playerControlScripts: []
   playerController: {fileID: 0}
+  movePlayerToOfferingPoint: 1
+  requireOfferAnimationToMovePlayer: 1
+  hidePlayerRenderersDuringOffering: 1
   offererAnimator: {fileID: 0}
   offerTriggerName: Offer
   offeringProp: {fileID: 513215850}
@@ -4202,17 +4206,121 @@ MonoBehaviour:
   offeringHoldDuration: 1.2
   showEndingStory: 1
   endingLineDuration: 4
-  endingVoiceSource: {fileID: 0}
+  endingVoiceSource: {fileID: 240902934}
   endingVoiceClip: {fileID: 0}
   endingVoiceClips:
   - {fileID: 8300000, guid: c27b1c94488795d498352fa8556b41f2, type: 3}
   - {fileID: 8300000, guid: 9fe379a46ecbff94ca6f125a7436f9e6, type: 3}
   - {fileID: 8300000, guid: 0f94bfcaa2f29634b847076706feffcd, type: 3}
   - {fileID: 8300000, guid: fa79908d75272704eb6f2b02f3e490c5, type: 3}
-  endingStoryLines: []
+  endingStoryLines:
+  - "Vua H\xF9ng r\u1EA5t h\xE0i l\xF2ng v\u1EDBi l\u1EC5 v\u1EADt c\u1EE7a Lang
+    Li\xEAu."
+  - "B\xE1nh Ch\u01B0ng t\u01B0\u1EE3ng tr\u01B0ng cho \u0111\u1EA5t, n\u01A1i g\xF3i
+    tr\u1ECDn s\u1EA3n v\u1EADt c\u1EE7a \u0111\u1ED3ng ru\u1ED9ng."
+  - "B\xE1nh Gi\u1EA7y t\u01B0\u1EE3ng tr\u01B0ng cho tr\u1EDDi, th\u1EC3 hi\u1EC7n
+    l\xF2ng bi\u1EBFt \u01A1n t\u1ED5 ti\xEAn v\xE0 tr\u1EDDi \u0111\u1EA5t."
+  - "T\u1EEB \u0111\xF3, B\xE1nh Ch\u01B0ng v\xE0 B\xE1nh Gi\u1EA7y tr\u1EDF th\xE0nh
+    bi\u1EC3u t\u01B0\u1EE3ng t\u1ED1t \u0111\u1EB9p c\u1EE7a d\xE2n t\u1ED9c."
   closeInventoryUIWhenEndingStarts: 1
   quitGameAfterEndingStory: 1
   quitDelayAfterEndingStory: 2
+--- !u!82 &240902934
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 240902930}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1001 &241419847
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5598,12 +5706,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 345546536}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
-  m_LocalPosition: {x: 67.5, y: -5.2, z: 100.39}
+  m_LocalRotation: {x: -0, y: -1, z: -0, w: 0}
+  m_LocalPosition: {x: -82.60664, y: -6.7753835, z: -177.13628}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1561540800}
   m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
 --- !u!1001 &346781055
 PrefabInstance:
@@ -7602,7 +7710,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 65ab2fb789d840d4c8ef2833e2a430c4, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 0.75
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -19675,12 +19783,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 967928967}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.99676067, z: 0, w: -0.08042494}
-  m_LocalPosition: {x: 53.79, y: -5.2, z: 100.49}
+  m_LocalRotation: {x: -0, y: -0.99676067, z: -0, w: -0.08042494}
+  m_LocalPosition: {x: -96.31664, y: -6.7753835, z: -177.03629}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1561540800}
   m_LocalEulerAnglesHint: {x: 0, y: -189.226, z: 0}
 --- !u!1 &969111500 stripped
 GameObject:
@@ -19700,7 +19808,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 65ab2fb789d840d4c8ef2833e2a430c4, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 0.75
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -24417,7 +24525,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 65ab2fb789d840d4c8ef2833e2a430c4, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 0.75
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -25111,7 +25219,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 65ab2fb789d840d4c8ef2833e2a430c4, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 0.75
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -28223,7 +28331,7 @@ MonoBehaviour:
   useBlackScreenIntro: 1
   blackScreenLines:
   - "Th\u1EDDi \u0111\u1EA1i c\xE1c Vua H\xF9ng, khi \u0111\u1EA5t n\u01B0\u1EDBc
-    V\u0103n Lang \u0111ang trong th\u1EDDi k\u1EF3 thanh b\xECnh...\r"
+    V\u0103n Lang \u0111ang trong th\u1EDDi k\u1EF3 thanh b\xECnh.\r"
   - "Vua H\xF9ng quy\u1EBFt \u0111\u1ECBnh m\u1EDF cu\u1ED9c tuy\u1EC3n ch\u1ECDn
     l\u1EC5 v\u1EADt \u0111\u1EC3 t\xECm ng\u01B0\u1EDDi k\u1EBF v\u1ECB x\u1EE9ng
     \u0111\xE1ng."
@@ -28233,7 +28341,7 @@ MonoBehaviour:
   blackScreenLineDuration: 4
   voiceSource: {fileID: 1519997680}
   blackScreenVoiceClips:
-  - {fileID: 8300000, guid: 4a0ee81467c580e4d9d574f4c8e7f43c, type: 3}
+  - {fileID: 8300000, guid: 7b3858ea7ef275444adfb5ae9a1eac4a, type: 3}
   - {fileID: 8300000, guid: 8e418a70e78b7c24f947248a205209be, type: 3}
   - {fileID: 8300000, guid: 735e0aa855d5a4a40be6aff337d76b63, type: 3}
   - {fileID: 8300000, guid: 57bae3cddba553c43a88adc3703174a5, type: 3}
@@ -29293,6 +29401,8 @@ Transform:
   - {fileID: 1170848441}
   - {fileID: 320129134}
   - {fileID: 1924452896}
+  - {fileID: 967928968}
+  - {fileID: 345546537}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1562154469
@@ -33680,6 +33790,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 834cec9894733b940ad44b93b01f479a,
         type: 3}
       insertIndex: -1
+      addedObject: {fileID: 1893499854}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 834cec9894733b940ad44b93b01f479a,
+        type: 3}
+      insertIndex: -1
       addedObject: {fileID: 1893499850}
   m_SourcePrefab: {fileID: 100100000, guid: 834cec9894733b940ad44b93b01f479a, type: 3}
 --- !u!1 &1893499847 stripped
@@ -33766,7 +33880,7 @@ MonoBehaviour:
   autoVillagerNameContains: Meshy_AI_Village
   autoRoutineDistance: 3
   autoRoutineSideOffset: 1.4
-  offeringDeadlineTimer: {fileID: 0}
+  offeringDeadlineTimer: {fileID: 1893499854}
   startDeadlineAfterOrder: 1
   moveRoyalCharactersToOfferingAreaAfterOrder: 1
   kingTransform: {fileID: 948378001}
@@ -33884,6 +33998,31 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1893499846}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1893499854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1893499847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f1d83a0b36f4e58a8a7c0d9622a6d91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startOnAwake: 0
+  timeLimitSeconds: 900
+  questTurnInNPC: {fileID: 0}
+  warningPrefix: "Th\u1EDDi gian c\xF2n l\u1EA1i"
+  failTitle: "\u0110\xE3 qu\xE1 th\u1EDDi gian d\xE2ng b\xE1nh"
+  failMessage: "Lang Li\xEAu kh\xF4ng k\u1ECBp d\xE2ng b\xE1nh l\xEAn Vua H\xF9ng.
+    H\xE3y th\u1EED l\u1EA1i v\xE0 chu\u1EA9n b\u1ECB l\u1EC5 v\u1EADt nhanh h\u01A1n."
+  showTimerOnGUI: 1
+  stopPlayerOnFail: 1
+  playerControlScripts: []
+  playerController: {fileID: 0}
+  quitDelayAfterFail: 3
+  quitGameAfterFail: 0
 --- !u!1 &1893724618
 GameObject:
   m_ObjectHideFlags: 0
@@ -44334,7 +44473,8 @@ PrefabInstance:
         type: 3}
       propertyPath: dropPrefab
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 6481347044316012556, guid: dddf1067ca877f646ba289121485e8a0,
+        type: 3}
     - target: {fileID: 8313528298887599904, guid: 9bccfdc7a249c9e499145f391188fc05,
         type: 3}
       propertyPath: respawnAfterDeath
@@ -45352,6 +45492,4 @@ SceneRoots:
   - {fileID: 1561540800}
   - {fileID: 1623901043}
   - {fileID: 1964054698}
-  - {fileID: 967928968}
-  - {fileID: 345546537}
   - {fileID: 513215850}

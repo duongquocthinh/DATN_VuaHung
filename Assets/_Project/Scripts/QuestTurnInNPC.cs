@@ -28,6 +28,9 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     [SerializeField] private GameObject playerObject;
     [SerializeField] private MonoBehaviour[] playerControlScripts;
     [SerializeField] private CharacterController playerController;
+    [SerializeField] private bool movePlayerToOfferingPoint = true;
+    [SerializeField] private bool requireOfferAnimationToMovePlayer = true;
+    [SerializeField] private bool hidePlayerRenderersDuringOffering = true;
     [SerializeField] private Animator offererAnimator;
     [SerializeField] private string offerTriggerName = "Offer";
     [SerializeField] private Transform offeringProp;
@@ -59,6 +62,8 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     private Vector3 originalCameraPosition;
     private Quaternion originalCameraRotation;
     private bool hasOriginalCameraTransform;
+    private Renderer[] hiddenPlayerRenderers;
+    private bool[] hiddenPlayerRendererStates;
 
     public bool IsQuestCompleted { get { return questCompleted; } }
 
@@ -146,6 +151,7 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
     {
         SetPlayerControls(false);
         CloseInventoryUIIfNeeded();
+        HidePlayerRenderersIfNeeded();
         yield return StartCoroutine(ShowOfferingRoutine());
 
         if (showEndingStory)
@@ -155,6 +161,7 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
 
         if (!quitGameAfterEndingStory)
         {
+            RestorePlayerRenderersIfNeeded();
             RestoreOfferingCamera();
             SetPlayerControls(true);
         }
@@ -178,8 +185,17 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         }
 
         SaveOfferingCamera();
-        MovePlayerToOfferingPoint();
-        PlayOfferAnimation();
+        bool canPlayOfferAnimation = CanPlayOfferAnimation();
+        if (ShouldMovePlayerForOffering(canPlayOfferAnimation))
+        {
+            MovePlayerToOfferingPoint();
+        }
+
+        if (canPlayOfferAnimation)
+        {
+            PlayOfferAnimation();
+        }
+
         yield return StartCoroutine(MoveOfferingCameraToCeremonyPoint());
         yield return new WaitForSeconds(Mathf.Max(0f, ceremonyBeforeOfferDelay));
 
@@ -313,12 +329,22 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
 
     private void PlayOfferAnimation()
     {
-        if (offererAnimator == null || string.IsNullOrWhiteSpace(offerTriggerName))
+        offererAnimator.SetTrigger(offerTriggerName);
+    }
+
+    private bool CanPlayOfferAnimation()
+    {
+        return offererAnimator != null && !string.IsNullOrWhiteSpace(offerTriggerName);
+    }
+
+    private bool ShouldMovePlayerForOffering(bool canPlayOfferAnimation)
+    {
+        if (!movePlayerToOfferingPoint)
         {
-            return;
+            return false;
         }
 
-        offererAnimator.SetTrigger(offerTriggerName);
+        return canPlayOfferAnimation || !requireOfferAnimationToMovePlayer;
     }
 
     private void SetPlayerControls(bool enabled)
@@ -392,6 +418,54 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         playerControlScripts = controls.ToArray();
     }
 
+    private void HidePlayerRenderersIfNeeded()
+    {
+        if (!hidePlayerRenderersDuringOffering)
+        {
+            return;
+        }
+
+        FindPlayerControlsIfNeeded();
+        if (playerObject == null)
+        {
+            return;
+        }
+
+        hiddenPlayerRenderers = playerObject.GetComponentsInChildren<Renderer>(true);
+        hiddenPlayerRendererStates = new bool[hiddenPlayerRenderers.Length];
+
+        for (int i = 0; i < hiddenPlayerRenderers.Length; i++)
+        {
+            if (hiddenPlayerRenderers[i] == null)
+            {
+                continue;
+            }
+
+            hiddenPlayerRendererStates[i] = hiddenPlayerRenderers[i].enabled;
+            hiddenPlayerRenderers[i].enabled = false;
+        }
+    }
+
+    private void RestorePlayerRenderersIfNeeded()
+    {
+        if (hiddenPlayerRenderers == null || hiddenPlayerRendererStates == null)
+        {
+            return;
+        }
+
+        int count = Mathf.Min(hiddenPlayerRenderers.Length, hiddenPlayerRendererStates.Length);
+        for (int i = 0; i < count; i++)
+        {
+            if (hiddenPlayerRenderers[i] != null)
+            {
+                hiddenPlayerRenderers[i].enabled = hiddenPlayerRendererStates[i];
+            }
+        }
+
+        hiddenPlayerRenderers = null;
+        hiddenPlayerRendererStates = null;
+    }
+
     private IEnumerator ShowEndingStoryRoutine()
     {
         string[] linesToShow = endingStoryLines;
@@ -407,6 +481,7 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         }
 
         showingEndingStory = true;
+        EnsureEndingVoiceSource();
 
         float endingVoiceDuration = 0f;
         bool useLineVoiceClips = endingVoiceClips != null && endingVoiceClips.Length > 0;
@@ -460,6 +535,23 @@ public class QuestTurnInNPC : MonoBehaviour, IInteractable
         }
 
         return endingVoiceClips[index];
+    }
+
+    private void EnsureEndingVoiceSource()
+    {
+        if (endingVoiceSource != null)
+        {
+            return;
+        }
+
+        endingVoiceSource = GetComponent<AudioSource>();
+        if (endingVoiceSource == null)
+        {
+            endingVoiceSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        endingVoiceSource.playOnAwake = false;
+        endingVoiceSource.loop = false;
     }
 
     private void CloseInventoryUIIfNeeded()
